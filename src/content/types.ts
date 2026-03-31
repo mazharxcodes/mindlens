@@ -28,6 +28,10 @@ export type LocalContentAnalysis = {
   tone: ToneLabel;
   intensity: number;
   confidence: number;
+  sentimentScore: number;
+  categoryScores: Record<ContentCategory, number>;
+  toneScores: Record<ToneLabel, number>;
+  hashtags: string[];
   matchedSignals: string[];
 };
 
@@ -42,6 +46,7 @@ export type BiasSnapshot = {
   score: number;
   shouldIntervene: boolean;
   sampleSize: number;
+  averageConfidence: number;
   dominantCategory: ContentCategory | null;
   dominantCategoryRatio: number;
   dominantSentiment: SentimentLabel | null;
