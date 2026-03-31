@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "MindLens",
+  "version": "0.1.0",
+  "description": "AI-powered perspective injection for Instagram Web",
+  "content_scripts": [
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": ["https://www.instagram.com/*"],
+  "permissions": ["storage"]
+}
