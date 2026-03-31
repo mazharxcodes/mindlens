@@ -8,11 +8,40 @@ export type InstagramPost = {
   imageAltTexts: string[];
 };
 
+export type ContentCategory =
+  | "relationships"
+  | "fitness"
+  | "money"
+  | "motivation"
+  | "career"
+  | "mental_health"
+  | "lifestyle"
+  | "general";
+
+export type SentimentLabel = "positive" | "negative" | "neutral";
+
+export type ToneLabel = "blaming" | "victimhood" | "aggressive" | "balanced";
+
+export type LocalContentAnalysis = {
+  category: ContentCategory;
+  sentiment: SentimentLabel;
+  tone: ToneLabel;
+  intensity: number;
+  confidence: number;
+  matchedSignals: string[];
+};
+
 export type MindLensEvent =
   | {
       type: "post_detected";
       createdAt: string;
       post: InstagramPost;
+    }
+  | {
+      type: "post_analyzed";
+      createdAt: string;
+      postId: string;
+      analysis: LocalContentAnalysis;
     }
   | {
       type: "post_view_started";
