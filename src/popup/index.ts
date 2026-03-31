@@ -109,6 +109,12 @@ async function resetAll(): Promise<void> {
   }
 }
 
+function openHarness(): void {
+  void chrome.tabs.create({
+    url: chrome.runtime.getURL("harness.html")
+  });
+}
+
 async function render(): Promise<void> {
   const settings = state.liveState?.settings ?? (await settingsStore.getSettings());
   const metrics = state.liveState?.metrics ?? (await metricsStore.getMetrics());
@@ -241,7 +247,7 @@ async function render(): Promise<void> {
         </div>
         <p class="subtle">Average pause after intervention: ${formatDuration(metrics.averagePauseAfterShownMs)}</p>
         <p class="subtle">
-          Provider usage: local ${metrics.totals.shownByProvider.local}, ollama ${metrics.totals.shownByProvider.ollama}, remote ${metrics.totals.shownByProvider.remote}
+          Provider usage: local ${metrics.totals.shownByProvider?.local ?? 0}, ollama ${metrics.totals.shownByProvider?.ollama ?? 0}, remote ${metrics.totals.shownByProvider?.remote ?? 0}
         </p>
       </section>
 
@@ -273,6 +279,7 @@ async function render(): Promise<void> {
       </section>
 
       <section class="panel actions">
+        <button id="harness-button" type="button">Open Replay Lab</button>
         <button id="refresh-button" type="button">Refresh Snapshot</button>
         <button id="reset-button" type="button" class="danger">Reset Settings And Metrics</button>
       </section>
@@ -301,6 +308,10 @@ async function render(): Promise<void> {
   document.getElementById("refresh-button")?.addEventListener("click", async () => {
     await loadLiveState();
     await render();
+  });
+
+  document.getElementById("harness-button")?.addEventListener("click", () => {
+    openHarness();
   });
 
   document.getElementById("reset-button")?.addEventListener("click", async () => {

@@ -214,4 +214,5 @@ button.danger {
 
 .panel.actions {
   gap: 10px;
+  flex-wrap: wrap;
 }
