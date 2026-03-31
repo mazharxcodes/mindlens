@@ -1,15 +1,18 @@
 import { MindLensEventBus } from "./event-bus";
+import { AnalysisService } from "./analysis-service";
 import { InstagramPost, LocalContentAnalysis } from "./types";
 import { nowIso } from "./utils";
-import { analyzePostText } from "./local-analyzer";
 
 export class LocalAnalysisEngine {
   private readonly analyses = new Map<string, LocalContentAnalysis>();
 
-  constructor(private readonly eventBus: MindLensEventBus) {}
+  constructor(
+    private readonly eventBus: MindLensEventBus,
+    private readonly analysisService: AnalysisService
+  ) {}
 
-  analyze(post: InstagramPost): LocalContentAnalysis {
-    const analysis = analyzePostText(post.text);
+  async analyze(post: InstagramPost): Promise<LocalContentAnalysis> {
+    const analysis = await this.analysisService.analyze(post);
     this.analyses.set(post.id, analysis);
     this.eventBus.emit({
       type: "post_analyzed",
