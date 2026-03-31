@@ -5,21 +5,26 @@ import { InstagramFeedObserver } from "./feed-observer";
 import { InterventionController } from "./intervention-controller";
 import { LocalAnalysisEngine } from "./local-analysis-engine";
 import { MetricsTracker } from "./metrics-tracker";
+import { createProviders } from "./provider-registry";
 import { ScrollActivityTracker } from "./scroll-tracker";
+import { MindLensSettingsStore } from "./settings-store";
 import { MindLensStorage } from "./storage";
 
 async function bootstrapMindLens(): Promise<void> {
+  const settingsStore = new MindLensSettingsStore();
+  const settings = await settingsStore.getSettings();
+  const providers = createProviders(settings);
   const eventBus = new MindLensEventBus();
   const biasDetector = new BiasDetector(eventBus);
-  const interventionController = new InterventionController(eventBus);
-  const analysisEngine = new LocalAnalysisEngine(eventBus);
+  const interventionController = new InterventionController(eventBus, providers.perspectiveService);
+  const analysisEngine = new LocalAnalysisEngine(eventBus, providers.analysisService);
   const engagementTracker = new PostEngagementTracker(eventBus);
   const scrollTracker = new ScrollActivityTracker(eventBus);
   const metricsTracker = new MetricsTracker(eventBus, new MindLensStorage());
   const feedObserver = new InstagramFeedObserver({
     eventBus,
     onPostDetected: (article, post) => {
-      analysisEngine.analyze(post);
+      void analysisEngine.analyze(post);
       engagementTracker.observe(article, post);
     }
   });
@@ -39,7 +44,10 @@ async function bootstrapMindLens(): Promise<void> {
       getAnalysis: (postId: string) => analysisEngine.getAnalysis(postId),
       getBiasSnapshot: () => biasDetector.getSnapshot(),
       getCurrentIntervention: () => interventionController.getCurrentIntervention(),
-      getMetrics: () => metricsTracker.getMetrics()
+      getMetrics: () => metricsTracker.getMetrics(),
+      getSettings: () => settingsStore.getSettings(),
+      updateSettings: (nextSettings: Parameters<MindLensSettingsStore["updateSettings"]>[0]) =>
+        settingsStore.updateSettings(nextSettings)
     }
   });
 }

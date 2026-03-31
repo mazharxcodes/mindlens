@@ -1,5 +1,5 @@
 import { MindLensEventBus } from "./event-bus";
-import { generatePerspectiveIntervention } from "./perspective-generator";
+import { PerspectiveService } from "./perspective-service";
 import { BiasSnapshot, MindLensEvent, PerspectiveIntervention } from "./types";
 import { nowIso } from "./utils";
 
@@ -14,11 +14,15 @@ export class InterventionController {
   private lastShownAtMs = 0;
   private lastShownScore = 0;
   private readonly dismissals = new Set<string>();
+  private isGenerating = false;
 
-  constructor(private readonly eventBus: MindLensEventBus) {
+  constructor(
+    private readonly eventBus: MindLensEventBus,
+    private readonly perspectiveService: PerspectiveService
+  ) {
     this.injectStyles();
     this.eventBus.subscribe((event) => {
-      this.handleEvent(event);
+      void this.handleEvent(event);
     });
   }
 
@@ -26,7 +30,7 @@ export class InterventionController {
     return this.currentIntervention;
   }
 
-  private handleEvent(event: MindLensEvent): void {
+  private async handleEvent(event: MindLensEvent): Promise<void> {
     if (event.type !== "bias_updated") {
       return;
     }
@@ -40,7 +44,16 @@ export class InterventionController {
       return;
     }
 
-    const intervention = generatePerspectiveIntervention(snapshot);
+    this.isGenerating = true;
+    let intervention: PerspectiveIntervention;
+    try {
+      intervention = await this.perspectiveService.generate(snapshot);
+    } catch {
+      this.isGenerating = false;
+      return;
+    }
+    this.isGenerating = false;
+
     if (this.dismissals.has(intervention.headline)) {
       return;
     }
@@ -58,7 +71,7 @@ export class InterventionController {
 
   private shouldShowIntervention(snapshot: BiasSnapshot): boolean {
     const nowMs = Date.now();
-    if (this.currentIntervention) {
+    if (this.currentIntervention || this.isGenerating) {
       return false;
     }
 

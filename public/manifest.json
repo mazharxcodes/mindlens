@@ -3,12 +3,21 @@
   "name": "MindLens",
   "version": "0.1.0",
   "description": "AI-powered perspective injection for Instagram Web",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.instagram.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
+  ],
+  "optional_host_permissions": [
+    "https://api.openai.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
   ],
   "host_permissions": ["https://www.instagram.com/*"],
   "permissions": ["storage"]
