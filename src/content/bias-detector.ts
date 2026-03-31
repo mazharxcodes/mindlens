@@ -23,7 +23,7 @@ type RatioResult<T extends string> = {
 
 const DEFAULT_WINDOW_SIZE = 40;
 const MIN_SAMPLE_SIZE = 8;
-const INTERVENTION_THRESHOLD = 0.67;
+const DEFAULT_INTERVENTION_THRESHOLD = 0.67;
 
 export class BiasDetector {
   private readonly recentPosts: AnalyzedPostRecord[] = [];
@@ -31,7 +31,8 @@ export class BiasDetector {
 
   constructor(
     private readonly eventBus: MindLensEventBus,
-    private readonly windowSize = DEFAULT_WINDOW_SIZE
+    private readonly windowSize = DEFAULT_WINDOW_SIZE,
+    private readonly interventionThreshold = DEFAULT_INTERVENTION_THRESHOLD
   ) {
     this.eventBus.subscribe((event) => {
       this.handleEvent(event);
@@ -98,7 +99,7 @@ export class BiasDetector {
 
     return {
       score,
-      shouldIntervene: sampleSize >= MIN_SAMPLE_SIZE && score >= INTERVENTION_THRESHOLD,
+      shouldIntervene: sampleSize >= MIN_SAMPLE_SIZE && score >= this.interventionThreshold,
       sampleSize,
       dominantCategory: dominantCategory.label,
       dominantCategoryRatio: Number(dominantCategory.ratio.toFixed(2)),

@@ -39,4 +39,16 @@ export class MindLensStorage {
       [METRICS_STORAGE_KEY]: metrics
     });
   }
+
+  async resetMetrics(): Promise<MindLensMetrics> {
+    const emptyMetrics = createEmptyMetrics();
+
+    if (chrome.storage?.local) {
+      await chrome.storage.local.set({
+        [METRICS_STORAGE_KEY]: emptyMetrics
+      });
+    }
+
+    return emptyMetrics;
+  }
 }

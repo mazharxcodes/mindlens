@@ -5,6 +5,7 @@ const SETTINGS_STORAGE_KEY = "mindlens.settings.v1";
 const DEFAULT_SETTINGS: MindLensSettings = {
   analysisMode: "heuristic",
   generationMode: "local",
+  interventionThreshold: 0.67,
   ollamaEnabled: false,
   ollamaEndpoint: "http://127.0.0.1:11434/api/generate",
   ollamaModel: "llama3.2:3b",
@@ -46,5 +47,17 @@ export class MindLensSettingsStore {
     }
 
     return merged;
+  }
+
+  async resetSettings(): Promise<MindLensSettings> {
+    const defaults = getDefaultSettings();
+
+    if (chrome.storage?.local) {
+      await chrome.storage.local.set({
+        [SETTINGS_STORAGE_KEY]: defaults
+      });
+    }
+
+    return defaults;
   }
 }

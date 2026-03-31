@@ -76,7 +76,8 @@ async function generatePerspectiveRemotely(
       headline: payload.headline,
       body: payload.body,
       createdAt: new Date().toISOString(),
-      trigger: snapshot
+      trigger: snapshot,
+      provider: "remote"
     }
   };
 }
@@ -137,7 +138,8 @@ async function generatePerspectiveWithOllama(
       headline: parsed.headline,
       body: parsed.body,
       createdAt: new Date().toISOString(),
-      trigger: snapshot
+      trigger: snapshot,
+      provider: "ollama"
     }
   };
 }
