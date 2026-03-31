@@ -18,10 +18,14 @@
     }
   ],
   "optional_host_permissions": [
-    "https://api.openai.com/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*"
+    "https://api.openai.com/*"
   ],
-  "host_permissions": ["https://www.instagram.com/*"],
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "http://127.0.0.1:11434/*"
+
+  ],
   "permissions": ["storage", "tabs"]
 }
