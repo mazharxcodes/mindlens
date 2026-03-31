@@ -50,6 +50,7 @@ export function generatePerspectiveIntervention(snapshot: BiasSnapshot): Perspec
     headline: buildHeadline(snapshot),
     body: buildBody(snapshot),
     createdAt,
-    trigger: snapshot
+    trigger: snapshot,
+    provider: "local"
   };
 }

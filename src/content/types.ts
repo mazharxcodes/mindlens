@@ -58,6 +58,7 @@ export type PerspectiveIntervention = {
   body: string;
   createdAt: string;
   trigger: BiasSnapshot;
+  provider: "local" | "ollama" | "remote";
 };
 
 export type InterventionInteractionStatus = "shown" | "expanded" | "dismissed" | "ignored";

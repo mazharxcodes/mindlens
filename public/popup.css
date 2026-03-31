@@ -1,0 +1,182 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 390px;
+  min-height: 560px;
+  background:
+    radial-gradient(circle at top, rgba(201, 169, 110, 0.18), transparent 38%),
+    linear-gradient(180deg, #f8f3e8 0%, #f3efe6 100%);
+  color: #1d2733;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.popup-shell {
+  padding: 16px;
+}
+
+.hero,
+.panel.actions,
+.recent-row,
+.stat-grid {
+  display: flex;
+}
+
+.hero,
+.panel.actions,
+.recent-row {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hero {
+  margin-bottom: 14px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #87653a;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 26px;
+}
+
+h2 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.panel {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid rgba(33, 49, 66, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 253, 249, 0.82);
+  box-shadow: 0 10px 28px rgba(24, 34, 45, 0.08);
+}
+
+.stat-grid {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stat {
+  flex: 1 1 calc(50% - 10px);
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(36, 52, 71, 0.05);
+}
+
+.stat strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+}
+
+.stat-label,
+.subtle,
+.recent-row span,
+small {
+  color: #5b6778;
+}
+
+.stat-label,
+small {
+  font-size: 12px;
+}
+
+.subtle {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.pill-live {
+  background: rgba(43, 116, 86, 0.14);
+  color: #21563d;
+}
+
+.pill-idle {
+  background: rgba(120, 83, 38, 0.12);
+  color: #7b5426;
+}
+
+.form-stack {
+  display: grid;
+  gap: 12px;
+}
+
+label span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  border-radius: 12px;
+  font: inherit;
+}
+
+input,
+select {
+  border: 1px solid rgba(36, 52, 71, 0.12);
+  background: #fffdf8;
+  padding: 10px 12px;
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
+button {
+  border: 0;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(36, 52, 71, 0.08);
+  color: #243447;
+}
+
+button.primary {
+  background: #243447;
+  color: #fff;
+}
+
+button.danger {
+  background: #8f4c3d;
+  color: #fff;
+}
+
+.recent-list {
+  display: grid;
+  gap: 8px;
+}
+
+.recent-item {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(36, 52, 71, 0.05);
+}
+
+.panel.actions {
+  gap: 10px;
+}

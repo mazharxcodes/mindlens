@@ -1,8 +1,10 @@
+import { MindLensMetrics } from "../content/types";
 import { BiasSnapshot, PerspectiveIntervention } from "../content/types";
 
 export type MindLensSettings = {
   analysisMode: "heuristic";
   generationMode: "local" | "ollama" | "remote";
+  interventionThreshold: number;
   ollamaEnabled: boolean;
   ollamaEndpoint: string;
   ollamaModel: string;
@@ -31,4 +33,17 @@ export type GeneratePerspectiveResponseMessage =
       error: string;
     };
 
-export type MindLensRuntimeMessage = GeneratePerspectiveRequestMessage;
+export type GetLiveStateRequestMessage = {
+  type: "mindlens:get-live-state";
+};
+
+export type GetLiveStateResponseMessage = {
+  biasSnapshot: BiasSnapshot;
+  currentIntervention: PerspectiveIntervention | null;
+  metrics: MindLensMetrics;
+  settings: MindLensSettings;
+};
+
+export type MindLensRuntimeMessage =
+  | GeneratePerspectiveRequestMessage
+  | GetLiveStateRequestMessage;

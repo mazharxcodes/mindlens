@@ -7,6 +7,9 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.instagram.com/*"],
@@ -20,5 +23,5 @@
     "http://localhost/*"
   ],
   "host_permissions": ["https://www.instagram.com/*"],
-  "permissions": ["storage"]
+  "permissions": ["storage", "tabs"]
 }

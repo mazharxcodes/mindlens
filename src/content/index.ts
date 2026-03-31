@@ -9,13 +9,14 @@ import { createProviders } from "./provider-registry";
 import { ScrollActivityTracker } from "./scroll-tracker";
 import { MindLensSettingsStore } from "./settings-store";
 import { MindLensStorage } from "./storage";
+import { GetLiveStateRequestMessage, GetLiveStateResponseMessage } from "../shared/runtime";
 
 async function bootstrapMindLens(): Promise<void> {
   const settingsStore = new MindLensSettingsStore();
   const settings = await settingsStore.getSettings();
   const providers = createProviders(settings);
   const eventBus = new MindLensEventBus();
-  const biasDetector = new BiasDetector(eventBus);
+  const biasDetector = new BiasDetector(eventBus, undefined, settings.interventionThreshold);
   const interventionController = new InterventionController(eventBus, providers.perspectiveService);
   const analysisEngine = new LocalAnalysisEngine(eventBus, providers.analysisService);
   const engagementTracker = new PostEngagementTracker(eventBus);
@@ -49,6 +50,23 @@ async function bootstrapMindLens(): Promise<void> {
       updateSettings: (nextSettings: Parameters<MindLensSettingsStore["updateSettings"]>[0]) =>
         settingsStore.updateSettings(nextSettings)
     }
+  });
+
+  chrome.runtime.onMessage.addListener((message: GetLiveStateRequestMessage, _sender, sendResponse) => {
+    if (message.type !== "mindlens:get-live-state") {
+      return false;
+    }
+
+    void settingsStore.getSettings().then((currentSettings) => {
+      sendResponse({
+        biasSnapshot: biasDetector.getSnapshot(),
+        currentIntervention: interventionController.getCurrentIntervention(),
+        metrics: metricsTracker.getMetrics(),
+        settings: currentSettings
+      } satisfies GetLiveStateResponseMessage);
+    });
+
+    return true;
   });
 }
 
