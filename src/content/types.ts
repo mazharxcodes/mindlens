@@ -28,6 +28,10 @@ export type LocalContentAnalysis = {
   tone: ToneLabel;
   intensity: number;
   confidence: number;
+  sentimentScore: number;
+  categoryScores: Record<ContentCategory, number>;
+  toneScores: Record<ToneLabel, number>;
+  hashtags: string[];
   matchedSignals: string[];
 };
 
@@ -42,6 +46,7 @@ export type BiasSnapshot = {
   score: number;
   shouldIntervene: boolean;
   sampleSize: number;
+  averageConfidence: number;
   dominantCategory: ContentCategory | null;
   dominantCategoryRatio: number;
   dominantSentiment: SentimentLabel | null;
@@ -50,6 +55,59 @@ export type BiasSnapshot = {
   dominantToneRatio: number;
   repeatedSignalRatio: number;
   components: BiasComponentScores;
+};
+
+export type ProviderName = "local" | "ollama" | "remote";
+
+export type ProviderHealth = "healthy" | "degraded" | "fallback" | "idle";
+
+export type ProviderDiagnostics = {
+  configuredMode: ProviderName;
+  activeProvider: ProviderName;
+  health: ProviderHealth;
+  usingFallback: boolean;
+  consecutiveFailures: number;
+  cooldownUntil: string | null;
+  lastError: string | null;
+  lastAttemptAt: string | null;
+  lastSuccessAt: string | null;
+};
+
+export type PerspectiveIntervention = {
+  id: string;
+  headline: string;
+  body: string;
+  createdAt: string;
+  trigger: BiasSnapshot;
+  provider: ProviderName;
+};
+
+export type InterventionInteractionStatus = "shown" | "expanded" | "dismissed" | "ignored";
+
+export type InterventionMetricRecord = {
+  interventionId: string;
+  createdAt: string;
+  status: InterventionInteractionStatus;
+  provider: ProviderName;
+  pauseAfterShownMs?: number;
+  scoreAtTrigger: number;
+  dominantCategory: ContentCategory | null;
+  dominantSentiment: SentimentLabel | null;
+  dominantTone: ToneLabel | null;
+};
+
+export type MindLensMetrics = {
+  totals: {
+    interventionsShown: number;
+    interventionsExpanded: number;
+    interventionsDismissed: number;
+    interventionsIgnored: number;
+    generationFailures: number;
+    shownByProvider: Record<ProviderName, number>;
+  };
+  averagePauseAfterShownMs: number;
+  lastInterventionAt: string | null;
+  recentInterventions: InterventionMetricRecord[];
 };
 
 export type MindLensEvent =
@@ -68,6 +126,43 @@ export type MindLensEvent =
       type: "bias_updated";
       createdAt: string;
       snapshot: BiasSnapshot;
+    }
+  | {
+      type: "intervention_shown";
+      createdAt: string;
+      intervention: PerspectiveIntervention;
+    }
+  | {
+      type: "intervention_dismissed";
+      createdAt: string;
+      interventionId: string;
+    }
+  | {
+      type: "intervention_expanded";
+      createdAt: string;
+      interventionId: string;
+    }
+  | {
+      type: "intervention_generation_failed";
+      createdAt: string;
+      provider: ProviderName;
+      error: string;
+    }
+  | {
+      type: "provider_status_updated";
+      createdAt: string;
+      diagnostics: ProviderDiagnostics;
+    }
+  | {
+      type: "intervention_ignored";
+      createdAt: string;
+      interventionId: string;
+      pauseAfterShownMs: number;
+    }
+  | {
+      type: "metrics_updated";
+      createdAt: string;
+      metrics: MindLensMetrics;
     }
   | {
       type: "post_view_started";

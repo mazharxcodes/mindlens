@@ -14,7 +14,10 @@ async function copyStaticAssets() {
 
 const sharedConfig = {
   entryPoints: {
-    content: path.join(projectRoot, "src/content/index.ts")
+    content: path.join(projectRoot, "src/content/index.ts"),
+    background: path.join(projectRoot, "src/background/index.ts"),
+    popup: path.join(projectRoot, "src/popup/index.ts"),
+    harness: path.join(projectRoot, "src/harness/index.ts")
   },
   bundle: true,
   outdir: distDir,

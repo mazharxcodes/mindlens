@@ -23,7 +23,7 @@ type RatioResult<T extends string> = {
 
 const DEFAULT_WINDOW_SIZE = 40;
 const MIN_SAMPLE_SIZE = 8;
-const INTERVENTION_THRESHOLD = 0.67;
+const DEFAULT_INTERVENTION_THRESHOLD = 0.67;
 
 export class BiasDetector {
   private readonly recentPosts: AnalyzedPostRecord[] = [];
@@ -31,7 +31,8 @@ export class BiasDetector {
 
   constructor(
     private readonly eventBus: MindLensEventBus,
-    private readonly windowSize = DEFAULT_WINDOW_SIZE
+    private readonly windowSize = DEFAULT_WINDOW_SIZE,
+    private readonly interventionThreshold = DEFAULT_INTERVENTION_THRESHOLD
   ) {
     this.eventBus.subscribe((event) => {
       this.handleEvent(event);
@@ -71,10 +72,24 @@ export class BiasDetector {
       return this.createEmptySnapshot();
     }
 
-    const categories = this.recentPosts.map((record) => record.analysis.category);
-    const sentiments = this.recentPosts.map((record) => record.analysis.sentiment);
-    const tones = this.recentPosts.map((record) => record.analysis.tone);
+    const categories = this.recentPosts.map((record) => ({
+      value: record.analysis.category,
+      weight: this.getAnalysisWeight(record.analysis)
+    }));
+    const sentiments = this.recentPosts.map((record) => ({
+      value: record.analysis.sentiment,
+      weight: this.getAnalysisWeight(record.analysis)
+    }));
+    const tones = this.recentPosts.map((record) => ({
+      value: record.analysis.tone,
+      weight: this.getAnalysisWeight(record.analysis)
+    }));
     const repeatedSignalRatio = this.computeRepeatedSignalRatio();
+    const averageConfidence = Number(
+      (
+        this.recentPosts.reduce((sum, record) => sum + record.analysis.confidence, 0) / sampleSize
+      ).toFixed(2)
+    );
 
     const dominantCategory = this.findDominantRatio(categories);
     const dominantSentiment = this.findDominantRatio(sentiments);
@@ -94,12 +109,14 @@ export class BiasDetector {
       components.repetition * 0.25;
 
     const confidenceMultiplier = Math.min(sampleSize / MIN_SAMPLE_SIZE, 1);
-    const score = Number(Math.min(rawScore * confidenceMultiplier, 1).toFixed(2));
+    const calibratedScore = rawScore * confidenceMultiplier * (0.7 + averageConfidence * 0.3);
+    const score = Number(Math.min(calibratedScore, 1).toFixed(2));
 
     return {
       score,
-      shouldIntervene: sampleSize >= MIN_SAMPLE_SIZE && score >= INTERVENTION_THRESHOLD,
+      shouldIntervene: sampleSize >= MIN_SAMPLE_SIZE && score >= this.interventionThreshold,
       sampleSize,
+      averageConfidence,
       dominantCategory: dominantCategory.label,
       dominantCategoryRatio: Number(dominantCategory.ratio.toFixed(2)),
       dominantSentiment: dominantSentiment.label,
@@ -113,30 +130,35 @@ export class BiasDetector {
 
   private computeRepeatedSignalRatio(): number {
     const signalCounts = new Map<string, number>();
+    let totalSignalWeight = 0;
 
     for (const record of this.recentPosts) {
       const uniqueSignals = new Set(record.analysis.matchedSignals);
+      const weight = this.getAnalysisWeight(record.analysis);
       for (const signal of uniqueSignals) {
-        signalCounts.set(signal, (signalCounts.get(signal) ?? 0) + 1);
+        signalCounts.set(signal, (signalCounts.get(signal) ?? 0) + weight);
+        totalSignalWeight += weight;
       }
     }
 
-    if (signalCounts.size === 0) {
+    if (signalCounts.size === 0 || totalSignalWeight === 0) {
       return 0;
     }
 
-    const repeatedSignals = Array.from(signalCounts.values()).filter((count) => count >= 3).length;
+    const repeatedSignals = Array.from(signalCounts.values()).filter((count) => count >= 2.2).length;
     return repeatedSignals / signalCounts.size;
   }
 
-  private findDominantRatio<T extends string>(values: T[]): RatioResult<T> {
+  private findDominantRatio<T extends string>(values: Array<{ value: T; weight: number }>): RatioResult<T> {
     if (values.length === 0) {
       return { label: null, ratio: 0 };
     }
 
     const counts = new Map<T, number>();
-    for (const value of values) {
-      counts.set(value, (counts.get(value) ?? 0) + 1);
+    let totalWeight = 0;
+    for (const entry of values) {
+      counts.set(entry.value, (counts.get(entry.value) ?? 0) + entry.weight);
+      totalWeight += entry.weight;
     }
 
     let bestLabel: T | null = null;
@@ -151,8 +173,16 @@ export class BiasDetector {
 
     return {
       label: bestLabel,
-      ratio: bestCount / values.length
+      ratio: totalWeight > 0 ? bestCount / totalWeight : 0
     };
+  }
+
+  private getAnalysisWeight(analysis: LocalContentAnalysis): number {
+    const confidenceWeight = Math.max(analysis.confidence, 0.15);
+    const categoryWeight = analysis.category === "general" ? 0.7 : 1;
+    const intensityWeight = 0.75 + analysis.intensity * 0.25;
+
+    return Number((confidenceWeight * categoryWeight * intensityWeight).toFixed(2));
   }
 
   private normalizeBiasComponent(value: number, neutralFloor: number, saturationPoint: number): number {
@@ -178,6 +208,7 @@ export class BiasDetector {
       score: 0,
       shouldIntervene: false,
       sampleSize: 0,
+      averageConfidence: 0,
       dominantCategory: null,
       dominantCategoryRatio: 0,
       dominantSentiment: null,
