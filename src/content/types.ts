@@ -60,6 +60,31 @@ export type PerspectiveIntervention = {
   trigger: BiasSnapshot;
 };
 
+export type InterventionInteractionStatus = "shown" | "expanded" | "dismissed" | "ignored";
+
+export type InterventionMetricRecord = {
+  interventionId: string;
+  createdAt: string;
+  status: InterventionInteractionStatus;
+  pauseAfterShownMs?: number;
+  scoreAtTrigger: number;
+  dominantCategory: ContentCategory | null;
+  dominantSentiment: SentimentLabel | null;
+  dominantTone: ToneLabel | null;
+};
+
+export type MindLensMetrics = {
+  totals: {
+    interventionsShown: number;
+    interventionsExpanded: number;
+    interventionsDismissed: number;
+    interventionsIgnored: number;
+  };
+  averagePauseAfterShownMs: number;
+  lastInterventionAt: string | null;
+  recentInterventions: InterventionMetricRecord[];
+};
+
 export type MindLensEvent =
   | {
       type: "post_detected";
@@ -91,6 +116,17 @@ export type MindLensEvent =
       type: "intervention_expanded";
       createdAt: string;
       interventionId: string;
+    }
+  | {
+      type: "intervention_ignored";
+      createdAt: string;
+      interventionId: string;
+      pauseAfterShownMs: number;
+    }
+  | {
+      type: "metrics_updated";
+      createdAt: string;
+      metrics: MindLensMetrics;
     }
   | {
       type: "post_view_started";
