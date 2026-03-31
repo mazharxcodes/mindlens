@@ -7,7 +7,13 @@ const EMPTY_METRICS: MindLensMetrics = {
     interventionsShown: 0,
     interventionsExpanded: 0,
     interventionsDismissed: 0,
-    interventionsIgnored: 0
+    interventionsIgnored: 0,
+    generationFailures: 0,
+    shownByProvider: {
+      local: 0,
+      ollama: 0,
+      remote: 0
+    }
   },
   averagePauseAfterShownMs: 0,
   lastInterventionAt: null,

@@ -20,7 +20,8 @@ body {
 .hero,
 .panel.actions,
 .recent-row,
-.stat-grid {
+.stat-grid,
+.provider-strip {
   display: flex;
 }
 
@@ -102,6 +103,10 @@ small {
   font-size: 13px;
 }
 
+.subtle-error {
+  color: #8f4c3d;
+}
+
 .pill {
   padding: 6px 10px;
   border-radius: 999px;
@@ -114,6 +119,36 @@ small {
 }
 
 .pill-idle {
+  background: rgba(120, 83, 38, 0.12);
+  color: #7b5426;
+}
+
+.provider-strip {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.provider-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(36, 52, 71, 0.08);
+  color: #243447;
+  font-size: 12px;
+}
+
+.provider-chip--healthy {
+  background: rgba(43, 116, 86, 0.14);
+  color: #21563d;
+}
+
+.provider-chip--fallback,
+.provider-chip--degraded {
+  background: rgba(143, 76, 61, 0.12);
+  color: #8f4c3d;
+}
+
+.provider-chip--idle {
   background: rgba(120, 83, 38, 0.12);
   color: #7b5426;
 }

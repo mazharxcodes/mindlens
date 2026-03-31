@@ -52,13 +52,29 @@ export type BiasSnapshot = {
   components: BiasComponentScores;
 };
 
+export type ProviderName = "local" | "ollama" | "remote";
+
+export type ProviderHealth = "healthy" | "degraded" | "fallback" | "idle";
+
+export type ProviderDiagnostics = {
+  configuredMode: ProviderName;
+  activeProvider: ProviderName;
+  health: ProviderHealth;
+  usingFallback: boolean;
+  consecutiveFailures: number;
+  cooldownUntil: string | null;
+  lastError: string | null;
+  lastAttemptAt: string | null;
+  lastSuccessAt: string | null;
+};
+
 export type PerspectiveIntervention = {
   id: string;
   headline: string;
   body: string;
   createdAt: string;
   trigger: BiasSnapshot;
-  provider: "local" | "ollama" | "remote";
+  provider: ProviderName;
 };
 
 export type InterventionInteractionStatus = "shown" | "expanded" | "dismissed" | "ignored";
@@ -67,6 +83,7 @@ export type InterventionMetricRecord = {
   interventionId: string;
   createdAt: string;
   status: InterventionInteractionStatus;
+  provider: ProviderName;
   pauseAfterShownMs?: number;
   scoreAtTrigger: number;
   dominantCategory: ContentCategory | null;
@@ -80,6 +97,8 @@ export type MindLensMetrics = {
     interventionsExpanded: number;
     interventionsDismissed: number;
     interventionsIgnored: number;
+    generationFailures: number;
+    shownByProvider: Record<ProviderName, number>;
   };
   averagePauseAfterShownMs: number;
   lastInterventionAt: string | null;
@@ -117,6 +136,17 @@ export type MindLensEvent =
       type: "intervention_expanded";
       createdAt: string;
       interventionId: string;
+    }
+  | {
+      type: "intervention_generation_failed";
+      createdAt: string;
+      provider: ProviderName;
+      error: string;
+    }
+  | {
+      type: "provider_status_updated";
+      createdAt: string;
+      diagnostics: ProviderDiagnostics;
     }
   | {
       type: "intervention_ignored";

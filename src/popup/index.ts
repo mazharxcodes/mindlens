@@ -1,6 +1,7 @@
 import { GetLiveStateRequestMessage, GetLiveStateResponseMessage } from "../shared/runtime";
 import { MindLensSettingsStore, getDefaultSettings } from "../content/settings-store";
 import { MindLensStorage, createEmptyMetrics } from "../content/storage";
+import { ProviderDiagnostics } from "../content/types";
 
 const settingsStore = new MindLensSettingsStore();
 const metricsStore = new MindLensStorage();
@@ -32,6 +33,27 @@ function formatDuration(durationMs: number): string {
   }
 
   return `${(durationMs / 1000).toFixed(1)}s`;
+}
+
+function formatDateTime(value: string | null): string {
+  if (!value) {
+    return "--";
+  }
+
+  return new Date(value).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+function formatCooldown(diagnostics: ProviderDiagnostics): string {
+  if (!diagnostics.cooldownUntil) {
+    return "--";
+  }
+
+  const remainingMs = new Date(diagnostics.cooldownUntil).getTime() - Date.now();
+  return remainingMs > 0 ? formatDuration(remainingMs) : "ready";
 }
 
 async function loadLiveState(): Promise<void> {
@@ -92,6 +114,7 @@ async function render(): Promise<void> {
   const metrics = state.liveState?.metrics ?? (await metricsStore.getMetrics());
   const liveBias = state.liveState?.biasSnapshot;
   const currentIntervention = state.liveState?.currentIntervention;
+  const providerDiagnostics = state.liveState?.providerDiagnostics;
 
   document.body.innerHTML = `
     <main class="popup-shell">
@@ -136,6 +159,25 @@ async function render(): Promise<void> {
 
       <section class="panel">
         <h2>Generation</h2>
+        <div class="provider-strip">
+          <div class="provider-chip">Configured: ${providerDiagnostics?.configuredMode ?? settings.generationMode}</div>
+          <div class="provider-chip">Active: ${providerDiagnostics?.activeProvider ?? "local"}</div>
+          <div class="provider-chip provider-chip--${providerDiagnostics?.health ?? "idle"}">
+            ${providerDiagnostics?.health ?? "idle"}
+          </div>
+        </div>
+        <p class="subtle">
+          ${
+            providerDiagnostics?.usingFallback
+              ? `Fallback active. Cooldown remaining: ${formatCooldown(providerDiagnostics)}`
+              : `Last success: ${formatDateTime(providerDiagnostics?.lastSuccessAt ?? null)}`
+          }
+        </p>
+        ${
+          providerDiagnostics?.lastError
+            ? `<p class="subtle subtle-error">Last provider error: ${providerDiagnostics.lastError}</p>`
+            : ""
+        }
         <form id="settings-form" class="form-stack">
           <label>
             <span>Mode</span>
@@ -188,8 +230,15 @@ async function render(): Promise<void> {
             <span class="stat-label">Ignored</span>
             <strong>${metrics.totals.interventionsIgnored}</strong>
           </div>
+          <div class="stat">
+            <span class="stat-label">Generation Failures</span>
+            <strong>${metrics.totals.generationFailures}</strong>
+          </div>
         </div>
         <p class="subtle">Average pause after intervention: ${formatDuration(metrics.averagePauseAfterShownMs)}</p>
+        <p class="subtle">
+          Provider usage: local ${metrics.totals.shownByProvider.local}, ollama ${metrics.totals.shownByProvider.ollama}, remote ${metrics.totals.shownByProvider.remote}
+        </p>
       </section>
 
       <section class="panel">
@@ -204,7 +253,7 @@ async function render(): Promise<void> {
                       <article class="recent-item">
                         <div class="recent-row">
                           <strong>${item.status}</strong>
-                          <span>${item.dominantCategory ?? "general"}</span>
+                          <span>${item.provider} · ${item.dominantCategory ?? "general"}</span>
                         </div>
                         <div class="recent-row subtle">
                           <span>Score ${item.scoreAtTrigger.toFixed(2)}</span>
@@ -273,7 +322,18 @@ async function render(): Promise<void> {
       },
       currentIntervention: null,
       metrics: createEmptyMetrics(),
-      settings: getDefaultSettings()
+      settings: getDefaultSettings(),
+      providerDiagnostics: {
+        configuredMode: "local",
+        activeProvider: "local",
+        health: "idle",
+        usingFallback: false,
+        consecutiveFailures: 0,
+        cooldownUntil: null,
+        lastError: null,
+        lastAttemptAt: null,
+        lastSuccessAt: null
+      }
     };
     await render();
   });

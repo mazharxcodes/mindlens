@@ -4,10 +4,14 @@ import {
   MindLensSettings
 } from "../shared/runtime";
 import { PerspectiveService } from "./perspective-service";
-import { BiasSnapshot, PerspectiveIntervention } from "./types";
+import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics, ProviderName } from "./types";
 
 export class RemotePerspectiveService implements PerspectiveService {
   constructor(private readonly settings: MindLensSettings) {}
+
+  private get providerName(): ProviderName {
+    return this.settings.generationMode === "ollama" ? "ollama" : "remote";
+  }
 
   async generate(snapshot: BiasSnapshot): Promise<PerspectiveIntervention> {
     const message: GeneratePerspectiveRequestMessage = {
@@ -27,5 +31,19 @@ export class RemotePerspectiveService implements PerspectiveService {
     }
 
     return response.intervention;
+  }
+
+  getDiagnostics(): ProviderDiagnostics {
+    return {
+      configuredMode: this.providerName,
+      activeProvider: this.providerName,
+      health: "idle",
+      usingFallback: false,
+      consecutiveFailures: 0,
+      cooldownUntil: null,
+      lastError: null,
+      lastAttemptAt: null,
+      lastSuccessAt: null
+    };
   }
 }

@@ -1,6 +1,11 @@
 import { MindLensEventBus } from "./event-bus";
 import { PerspectiveService } from "./perspective-service";
-import { BiasSnapshot, MindLensEvent, PerspectiveIntervention } from "./types";
+import {
+  BiasSnapshot,
+  MindLensEvent,
+  PerspectiveIntervention,
+  ProviderDiagnostics
+} from "./types";
 import { nowIso } from "./utils";
 
 const CARD_ID = "mindlens-intervention-card";
@@ -30,6 +35,10 @@ export class InterventionController {
     return this.currentIntervention;
   }
 
+  getProviderDiagnostics(): ProviderDiagnostics {
+    return this.perspectiveService.getDiagnostics();
+  }
+
   private async handleEvent(event: MindLensEvent): Promise<void> {
     if (event.type !== "bias_updated") {
       return;
@@ -45,14 +54,35 @@ export class InterventionController {
     }
 
     this.isGenerating = true;
+    this.eventBus.emit({
+      type: "provider_status_updated",
+      createdAt: nowIso(),
+      diagnostics: this.perspectiveService.getDiagnostics()
+    });
     let intervention: PerspectiveIntervention;
     try {
       intervention = await this.perspectiveService.generate(snapshot);
-    } catch {
+    } catch (error) {
       this.isGenerating = false;
+      this.eventBus.emit({
+        type: "intervention_generation_failed",
+        createdAt: nowIso(),
+        provider: this.perspectiveService.getDiagnostics().configuredMode,
+        error: error instanceof Error ? error.message : "Unknown generation failure."
+      });
+      this.eventBus.emit({
+        type: "provider_status_updated",
+        createdAt: nowIso(),
+        diagnostics: this.perspectiveService.getDiagnostics()
+      });
       return;
     }
     this.isGenerating = false;
+    this.eventBus.emit({
+      type: "provider_status_updated",
+      createdAt: nowIso(),
+      diagnostics: this.perspectiveService.getDiagnostics()
+    });
 
     if (this.dismissals.has(intervention.headline)) {
       return;
