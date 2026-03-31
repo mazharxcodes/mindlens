@@ -52,6 +52,14 @@ export type BiasSnapshot = {
   components: BiasComponentScores;
 };
 
+export type PerspectiveIntervention = {
+  id: string;
+  headline: string;
+  body: string;
+  createdAt: string;
+  trigger: BiasSnapshot;
+};
+
 export type MindLensEvent =
   | {
       type: "post_detected";
@@ -68,6 +76,21 @@ export type MindLensEvent =
       type: "bias_updated";
       createdAt: string;
       snapshot: BiasSnapshot;
+    }
+  | {
+      type: "intervention_shown";
+      createdAt: string;
+      intervention: PerspectiveIntervention;
+    }
+  | {
+      type: "intervention_dismissed";
+      createdAt: string;
+      interventionId: string;
+    }
+  | {
+      type: "intervention_expanded";
+      createdAt: string;
+      interventionId: string;
     }
   | {
       type: "post_view_started";
