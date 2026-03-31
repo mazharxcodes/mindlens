@@ -1,5 +1,4 @@
-import { MindLensMetrics } from "../content/types";
-import { BiasSnapshot, PerspectiveIntervention } from "../content/types";
+import { BiasSnapshot, MindLensMetrics, PerspectiveIntervention, ProviderDiagnostics } from "../content/types";
 
 export type MindLensSettings = {
   analysisMode: "heuristic";
@@ -42,6 +41,7 @@ export type GetLiveStateResponseMessage = {
   currentIntervention: PerspectiveIntervention | null;
   metrics: MindLensMetrics;
   settings: MindLensSettings;
+  providerDiagnostics: ProviderDiagnostics;
 };
 
 export type MindLensRuntimeMessage =

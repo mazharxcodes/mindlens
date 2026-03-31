@@ -62,7 +62,8 @@ async function bootstrapMindLens(): Promise<void> {
         biasSnapshot: biasDetector.getSnapshot(),
         currentIntervention: interventionController.getCurrentIntervention(),
         metrics: metricsTracker.getMetrics(),
-        settings: currentSettings
+        settings: currentSettings,
+        providerDiagnostics: interventionController.getProviderDiagnostics()
       } satisfies GetLiveStateResponseMessage);
     });
 

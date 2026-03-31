@@ -67,6 +67,9 @@ export class MetricsTracker {
       case "intervention_shown":
         this.handleInterventionShown(event.intervention);
         break;
+      case "intervention_generation_failed":
+        this.handleGenerationFailed();
+        break;
       case "intervention_expanded":
         this.handleInterventionExpanded(event.interventionId);
         break;
@@ -87,6 +90,7 @@ export class MetricsTracker {
     }
 
     this.metrics.totals.interventionsShown += 1;
+    this.metrics.totals.shownByProvider[intervention.provider] += 1;
     this.metrics.lastInterventionAt = intervention.createdAt;
 
     const activeIntervention: ActiveInterventionState = {
@@ -105,6 +109,7 @@ export class MetricsTracker {
       interventionId: intervention.id,
       createdAt: intervention.createdAt,
       status: "shown",
+      provider: intervention.provider,
       scoreAtTrigger: intervention.trigger.score,
       dominantCategory: intervention.trigger.dominantCategory,
       dominantSentiment: intervention.trigger.dominantSentiment,
@@ -130,6 +135,12 @@ export class MetricsTracker {
       this.persistSoon();
       this.emitMetricsUpdated();
     }
+  }
+
+  private handleGenerationFailed(): void {
+    this.metrics.totals.generationFailures += 1;
+    this.persistSoon();
+    this.emitMetricsUpdated();
   }
 
   private handleInterventionDismissed(interventionId: string): void {
