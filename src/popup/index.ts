@@ -247,7 +247,7 @@ async function render(): Promise<void> {
         </div>
         <p class="subtle">Average pause after intervention: ${formatDuration(metrics.averagePauseAfterShownMs)}</p>
         <p class="subtle">
-          Provider usage: local ${metrics.totals.shownByProvider.local}, ollama ${metrics.totals.shownByProvider.ollama}, remote ${metrics.totals.shownByProvider.remote}
+          Provider usage: local ${metrics.totals.shownByProvider?.local ?? 0}, ollama ${metrics.totals.shownByProvider?.ollama ?? 0}, remote ${metrics.totals.shownByProvider?.remote ?? 0}
         </p>
       </section>
 
