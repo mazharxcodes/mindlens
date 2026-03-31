@@ -4,15 +4,18 @@ import { MindLensEventBus } from "./event-bus";
 import { InstagramFeedObserver } from "./feed-observer";
 import { InterventionController } from "./intervention-controller";
 import { LocalAnalysisEngine } from "./local-analysis-engine";
+import { MetricsTracker } from "./metrics-tracker";
 import { ScrollActivityTracker } from "./scroll-tracker";
+import { MindLensStorage } from "./storage";
 
-function bootstrapMindLens(): void {
+async function bootstrapMindLens(): Promise<void> {
   const eventBus = new MindLensEventBus();
   const biasDetector = new BiasDetector(eventBus);
   const interventionController = new InterventionController(eventBus);
   const analysisEngine = new LocalAnalysisEngine(eventBus);
   const engagementTracker = new PostEngagementTracker(eventBus);
   const scrollTracker = new ScrollActivityTracker(eventBus);
+  const metricsTracker = new MetricsTracker(eventBus, new MindLensStorage());
   const feedObserver = new InstagramFeedObserver({
     eventBus,
     onPostDetected: (article, post) => {
@@ -21,11 +24,13 @@ function bootstrapMindLens(): void {
     }
   });
 
+  await metricsTracker.init();
   feedObserver.start();
   scrollTracker.start();
 
   window.addEventListener("beforeunload", () => {
     engagementTracker.flush();
+    metricsTracker.flush();
   });
 
   Object.assign(window, {
@@ -33,11 +38,12 @@ function bootstrapMindLens(): void {
       getRecentEvents: (limit?: number) => eventBus.getRecentEvents(limit),
       getAnalysis: (postId: string) => analysisEngine.getAnalysis(postId),
       getBiasSnapshot: () => biasDetector.getSnapshot(),
-      getCurrentIntervention: () => interventionController.getCurrentIntervention()
+      getCurrentIntervention: () => interventionController.getCurrentIntervention(),
+      getMetrics: () => metricsTracker.getMetrics()
     }
   });
 }
 
 if (window.location.hostname === "www.instagram.com") {
-  bootstrapMindLens();
+  void bootstrapMindLens();
 }
