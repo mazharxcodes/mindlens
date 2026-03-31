@@ -314,4 +314,4 @@ npm run typecheck
 
 ## License
 
-No license file is included yet. Add one before public distribution.
+This project is licensed under the MIT License. See [`LICENSE`](/Users/mohdekrama.mazhar/Desktop/Work/Personal/mindlens/LICENSE).
