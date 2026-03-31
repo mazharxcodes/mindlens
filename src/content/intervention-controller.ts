@@ -13,13 +13,24 @@ const CARD_VISIBLE_CLASS = "mindlens-card-visible";
 const STYLE_ID = "mindlens-intervention-style";
 const COOLDOWN_MS = 90_000;
 const SCORE_DELTA_TO_RESHOW = 0.12;
+const QUIET_WINDOW_MS = 1800;
+const MAX_SCROLL_VELOCITY_FOR_SHOW = 900;
+const MIN_ACTIVE_VIEW_MS = 2500;
+const PATTERN_COOLDOWN_MS = 10 * 60_000;
 
 export class InterventionController {
   private currentIntervention: PerspectiveIntervention | null = null;
   private lastShownAtMs = 0;
   private lastShownScore = 0;
   private readonly dismissals = new Set<string>();
+  private readonly recentPatternShows = new Map<string, number>();
   private isGenerating = false;
+  private lastScrollAtMs = Date.now();
+  private lastScrollVelocity = 0;
+  private activeViewPostId: string | null = null;
+  private activeViewStartedAtMs: number | null = null;
+  private pendingSnapshot: BiasSnapshot | null = null;
+  private pendingTimerId: number | null = null;
 
   constructor(
     private readonly eventBus: MindLensEventBus,
@@ -40,25 +51,136 @@ export class InterventionController {
   }
 
   private async handleEvent(event: MindLensEvent): Promise<void> {
-    if (event.type !== "bias_updated") {
-      return;
+    switch (event.type) {
+      case "bias_updated":
+        await this.handleBiasUpdated(event.snapshot);
+        break;
+      case "scroll_activity":
+        this.lastScrollAtMs = Date.now();
+        this.lastScrollVelocity = event.velocityPxPerSec;
+        if (this.pendingSnapshot) {
+          this.schedulePendingEvaluation();
+        }
+        break;
+      case "post_view_started":
+        this.activeViewPostId = event.postId;
+        this.activeViewStartedAtMs = Date.now();
+        if (this.pendingSnapshot) {
+          this.schedulePendingEvaluation();
+        }
+        break;
+      case "post_view_ended":
+        if (this.activeViewPostId === event.postId) {
+          this.activeViewPostId = null;
+          this.activeViewStartedAtMs = null;
+        }
+        break;
+      case "intervention_ignored":
+        if (this.currentIntervention?.id === event.interventionId) {
+          this.removeCard();
+        }
+        break;
+      default:
+        break;
     }
+  }
 
-    const snapshot = event.snapshot;
+  private async handleBiasUpdated(snapshot: BiasSnapshot): Promise<void> {
     if (!snapshot.shouldIntervene) {
+      this.pendingSnapshot = null;
+      this.clearPendingTimer();
       return;
     }
 
-    if (!this.shouldShowIntervention(snapshot)) {
+    this.pendingSnapshot = snapshot;
+    if (!this.shouldPrepareIntervention(snapshot)) {
+      return;
+    }
+
+    if (!this.isReadyMomentToShow()) {
+      this.schedulePendingEvaluation();
+      return;
+    }
+
+    await this.showIntervention(snapshot);
+  }
+
+  private shouldPrepareIntervention(snapshot: BiasSnapshot): boolean {
+    const nowMs = Date.now();
+    if (this.currentIntervention || this.isGenerating) {
+      return false;
+    }
+
+    if (this.hasRecentlyShownSimilarPattern(snapshot)) {
+      return false;
+    }
+
+    if (nowMs - this.lastShownAtMs < COOLDOWN_MS) {
+      return snapshot.score - this.lastShownScore >= SCORE_DELTA_TO_RESHOW;
+    }
+
+    return true;
+  }
+
+  private isReadyMomentToShow(): boolean {
+    const quietForMs = Date.now() - this.lastScrollAtMs;
+    const activeViewDurationMs = this.activeViewStartedAtMs
+      ? Date.now() - this.activeViewStartedAtMs
+      : 0;
+
+    return (
+      quietForMs >= QUIET_WINDOW_MS &&
+      this.lastScrollVelocity <= MAX_SCROLL_VELOCITY_FOR_SHOW &&
+      activeViewDurationMs >= MIN_ACTIVE_VIEW_MS
+    );
+  }
+
+  private schedulePendingEvaluation(): void {
+    if (!this.pendingSnapshot) {
+      return;
+    }
+
+    this.clearPendingTimer();
+    this.pendingTimerId = window.setTimeout(() => {
+      const snapshot = this.pendingSnapshot;
+      if (!snapshot) {
+        return;
+      }
+
+      if (!this.shouldPrepareIntervention(snapshot)) {
+        return;
+      }
+
+      if (!this.isReadyMomentToShow()) {
+        this.schedulePendingEvaluation();
+        return;
+      }
+
+      void this.showIntervention(snapshot);
+    }, QUIET_WINDOW_MS);
+  }
+
+  private clearPendingTimer(): void {
+    if (this.pendingTimerId !== null) {
+      window.clearTimeout(this.pendingTimerId);
+      this.pendingTimerId = null;
+    }
+  }
+
+  private async showIntervention(snapshot: BiasSnapshot): Promise<void> {
+    if (!this.shouldPrepareIntervention(snapshot) || !this.isReadyMomentToShow()) {
       return;
     }
 
     this.isGenerating = true;
+    this.pendingSnapshot = null;
+    this.clearPendingTimer();
     this.eventBus.emit({
       type: "provider_status_updated",
       createdAt: nowIso(),
       diagnostics: this.perspectiveService.getDiagnostics()
     });
+
     let intervention: PerspectiveIntervention;
     try {
       intervention = await this.perspectiveService.generate(snapshot);
@@ -77,6 +199,7 @@ export class InterventionController {
       });
       return;
     }
+
     this.isGenerating = false;
     this.eventBus.emit({
       type: "provider_status_updated",
@@ -91,6 +214,7 @@ export class InterventionController {
     this.currentIntervention = intervention;
     this.lastShownAtMs = Date.now();
     this.lastShownScore = snapshot.score;
+    this.markPatternShown(snapshot);
     this.render(intervention);
     this.eventBus.emit({
       type: "intervention_shown",
@@ -99,17 +223,21 @@ export class InterventionController {
     });
   }
 
-  private shouldShowIntervention(snapshot: BiasSnapshot): boolean {
-    const nowMs = Date.now();
-    if (this.currentIntervention || this.isGenerating) {
-      return false;
-    }
+  private getPatternSignature(snapshot: BiasSnapshot): string {
+    return [
+      snapshot.dominantCategory ?? "general",
+      snapshot.dominantSentiment ?? "neutral",
+      snapshot.dominantTone ?? "balanced"
+    ].join("|");
+  }
 
-    if (nowMs - this.lastShownAtMs >= COOLDOWN_MS) {
-      return true;
-    }
+  private hasRecentlyShownSimilarPattern(snapshot: BiasSnapshot): boolean {
+    const lastShownAt = this.recentPatternShows.get(this.getPatternSignature(snapshot));
+    return typeof lastShownAt === "number" && Date.now() - lastShownAt < PATTERN_COOLDOWN_MS;
+  }
 
-    return snapshot.score - this.lastShownScore >= SCORE_DELTA_TO_RESHOW;
+  private markPatternShown(snapshot: BiasSnapshot): void {
+    this.recentPatternShows.set(this.getPatternSignature(snapshot), Date.now());
   }
 
   private render(intervention: PerspectiveIntervention): void {
@@ -152,7 +280,9 @@ export class InterventionController {
       if (action === "expand") {
         card.classList.toggle(CARD_VISIBLE_CLASS);
         const expanded = card.classList.contains(CARD_VISIBLE_CLASS);
-        card.querySelector<HTMLElement>(".mindlens-card__body")?.classList.toggle("mindlens-card__body--visible", expanded);
+        card
+          .querySelector<HTMLElement>(".mindlens-card__body")
+          ?.classList.toggle("mindlens-card__body--visible", expanded);
         target.textContent = expanded ? "Close" : "Reflect";
 
         if (expanded) {
