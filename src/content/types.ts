@@ -31,6 +31,27 @@ export type LocalContentAnalysis = {
   matchedSignals: string[];
 };
 
+export type BiasComponentScores = {
+  categoryDominance: number;
+  sentimentSkew: number;
+  toneSkew: number;
+  repetition: number;
+};
+
+export type BiasSnapshot = {
+  score: number;
+  shouldIntervene: boolean;
+  sampleSize: number;
+  dominantCategory: ContentCategory | null;
+  dominantCategoryRatio: number;
+  dominantSentiment: SentimentLabel | null;
+  dominantSentimentRatio: number;
+  dominantTone: ToneLabel | null;
+  dominantToneRatio: number;
+  repeatedSignalRatio: number;
+  components: BiasComponentScores;
+};
+
 export type MindLensEvent =
   | {
       type: "post_detected";
@@ -42,6 +63,11 @@ export type MindLensEvent =
       createdAt: string;
       postId: string;
       analysis: LocalContentAnalysis;
+    }
+  | {
+      type: "bias_updated";
+      createdAt: string;
+      snapshot: BiasSnapshot;
     }
   | {
       type: "post_view_started";
