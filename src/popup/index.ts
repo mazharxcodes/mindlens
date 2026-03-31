@@ -147,6 +147,10 @@ async function render(): Promise<void> {
             <span class="stat-label">Tone</span>
             <strong>${liveBias?.dominantTone ?? "--"}</strong>
           </div>
+          <div class="stat">
+            <span class="stat-label">Avg Confidence</span>
+            <strong>${liveBias ? liveBias.averageConfidence.toFixed(2) : "--"}</strong>
+          </div>
         </div>
         <p class="subtle">
           ${
@@ -306,6 +310,7 @@ async function render(): Promise<void> {
         score: 0,
         shouldIntervene: false,
         sampleSize: 0,
+        averageConfidence: 0,
         dominantCategory: null,
         dominantCategoryRatio: 0,
         dominantSentiment: null,
