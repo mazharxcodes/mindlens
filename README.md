@@ -314,4 +314,4 @@ npm run typecheck
 
 ## License
 
-This project is licensed under the MIT License. See [`LICENSE`](/Users/mohdekrama.mazhar/Desktop/Work/Personal/mindlens/LICENSE).
+This project is licensed under the MIT License. See [`LICENSE`](https://github.com/mazharxcodes/mindlens/blob/dev/LICENSE).
