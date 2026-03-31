@@ -5,22 +5,50 @@ import { ProviderDiagnostics } from "../content/types";
 
 const settingsStore = new MindLensSettingsStore();
 const metricsStore = new MindLensStorage();
+const POPUP_PREFS_KEY = "mindlens.popup-prefs.v1";
 
 type PopupState = {
   isInstagramTab: boolean;
   tabId: number | null;
   liveState: GetLiveStateResponseMessage | null;
+  onboardingComplete: boolean;
 };
 
 const state: PopupState = {
   isInstagramTab: false,
   tabId: null,
-  liveState: null
+  liveState: null,
+  onboardingComplete: false
+};
+
+type PopupPrefs = {
+  onboardingComplete: boolean;
 };
 
 async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   return tabs[0];
+}
+
+async function getPopupPrefs(): Promise<PopupPrefs> {
+  try {
+    const stored = await chrome.storage.local.get(POPUP_PREFS_KEY);
+    return {
+      onboardingComplete: Boolean(stored[POPUP_PREFS_KEY]?.onboardingComplete)
+    };
+  } catch {
+    return { onboardingComplete: false };
+  }
+}
+
+async function setPopupPrefs(nextPrefs: Partial<PopupPrefs>): Promise<void> {
+  const current = await getPopupPrefs();
+  await chrome.storage.local.set({
+    [POPUP_PREFS_KEY]: {
+      ...current,
+      ...nextPrefs
+    }
+  });
 }
 
 function formatDuration(durationMs: number): string {
@@ -57,6 +85,7 @@ function formatCooldown(diagnostics: ProviderDiagnostics): string {
 }
 
 async function loadLiveState(): Promise<void> {
+  state.onboardingComplete = (await getPopupPrefs()).onboardingComplete;
   const tab = await getActiveTab();
   const isInstagramTab = Boolean(tab?.id && tab.url?.startsWith("https://www.instagram.com/"));
   state.isInstagramTab = isInstagramTab;
@@ -103,6 +132,7 @@ async function applySettingsFromForm(form: HTMLFormElement): Promise<void> {
 async function resetAll(): Promise<void> {
   await settingsStore.resetSettings();
   await metricsStore.resetMetrics();
+  await setPopupPrefs({ onboardingComplete: false });
 
   if (state.tabId) {
     await chrome.tabs.reload(state.tabId);
@@ -113,6 +143,48 @@ function openHarness(): void {
   void chrome.tabs.create({
     url: chrome.runtime.getURL("harness.html")
   });
+}
+
+function openInstagram(): void {
+  void chrome.tabs.create({
+    url: "https://www.instagram.com/"
+  });
+}
+
+function renderOnboarding(): string {
+  if (state.onboardingComplete) {
+    return "";
+  }
+
+  return `
+    <section class="panel onboarding">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Welcome</p>
+          <h2>How MindLens Works</h2>
+        </div>
+        <button id="dismiss-onboarding" type="button" class="ghost-button">Skip</button>
+      </div>
+      <div class="checklist">
+        <article class="check-item">
+          <strong>1. Open Instagram Web</strong>
+          <p>MindLens only runs on instagram.com and reads visible feed text in the current tab.</p>
+        </article>
+        <article class="check-item">
+          <strong>2. Choose your generation mode</strong>
+          <p>Use local mode for zero-cost testing, or Ollama if you want local model-generated perspectives.</p>
+        </article>
+        <article class="check-item">
+          <strong>3. Scroll normally</strong>
+          <p>The extension waits for repeated patterns, then shows a small counter-perspective at quieter moments.</p>
+        </article>
+      </div>
+      <div class="onboarding-actions">
+        <button id="open-instagram" type="button" class="primary">Open Instagram</button>
+        <button id="complete-onboarding" type="button">Start Testing</button>
+      </div>
+    </section>
+  `;
 }
 
 async function render(): Promise<void> {
@@ -131,6 +203,33 @@ async function render(): Promise<void> {
         </div>
         <div class="pill ${state.isInstagramTab ? "pill-live" : "pill-idle"}">
           ${state.isInstagramTab ? "Instagram live" : "Open Instagram"}
+        </div>
+      </section>
+
+      ${renderOnboarding()}
+
+      <section class="panel">
+        <h2>Tester Readiness</h2>
+        <div class="callout ${state.isInstagramTab ? "callout-live" : "callout-idle"}">
+          ${
+            state.isInstagramTab
+              ? "Instagram tab detected. If the live snapshot looks empty after a reload, refresh the Instagram page once."
+              : "Open Instagram Web in a tab before evaluating live feed behavior."
+          }
+        </div>
+        <div class="mini-grid">
+          <div class="mini-card">
+            <span class="mini-label">Access</span>
+            <strong>Visible Instagram feed text only</strong>
+          </div>
+          <div class="mini-card">
+            <span class="mini-label">Storage</span>
+            <strong>Local extension storage only</strong>
+          </div>
+          <div class="mini-card">
+            <span class="mini-label">AI Mode</span>
+            <strong>${settings.generationMode}</strong>
+          </div>
         </div>
       </section>
 
@@ -219,6 +318,9 @@ async function render(): Promise<void> {
           </label>
           <button type="submit" class="primary">Save And Reload Tab</button>
         </form>
+        <p class="subtle">
+          Permissions note: MindLens runs on Instagram Web, stores metrics locally in your browser, and only reaches Ollama or a remote provider if you explicitly choose that mode.
+        </p>
       </section>
 
       <section class="panel">
@@ -314,6 +416,22 @@ async function render(): Promise<void> {
     openHarness();
   });
 
+  document.getElementById("open-instagram")?.addEventListener("click", () => {
+    openInstagram();
+  });
+
+  document.getElementById("dismiss-onboarding")?.addEventListener("click", async () => {
+    await setPopupPrefs({ onboardingComplete: true });
+    state.onboardingComplete = true;
+    await render();
+  });
+
+  document.getElementById("complete-onboarding")?.addEventListener("click", async () => {
+    await setPopupPrefs({ onboardingComplete: true });
+    state.onboardingComplete = true;
+    await render();
+  });
+
   document.getElementById("reset-button")?.addEventListener("click", async () => {
     await resetAll();
     state.liveState = {
@@ -351,6 +469,7 @@ async function render(): Promise<void> {
         lastSuccessAt: null
       }
     };
+    state.onboardingComplete = false;
     await render();
   });
 }

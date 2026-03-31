@@ -21,13 +21,17 @@ body {
 .panel.actions,
 .recent-row,
 .stat-grid,
-.provider-strip {
+.provider-strip,
+.panel-header,
+.onboarding-actions {
   display: flex;
 }
 
 .hero,
 .panel.actions,
-.recent-row {
+.recent-row,
+.panel-header,
+.onboarding-actions {
   justify-content: space-between;
   align-items: center;
 }
@@ -68,6 +72,11 @@ h2 {
   box-shadow: 0 10px 28px rgba(24, 34, 45, 0.08);
 }
 
+.onboarding {
+  border-color: rgba(135, 101, 58, 0.18);
+  background: linear-gradient(180deg, rgba(255, 250, 241, 0.96), rgba(255, 253, 249, 0.9));
+}
+
 .stat-grid {
   flex-wrap: wrap;
   gap: 10px;
@@ -101,6 +110,62 @@ small {
 .subtle {
   margin-top: 10px;
   font-size: 13px;
+}
+
+.checklist,
+.mini-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.check-item,
+.mini-card,
+.callout {
+  border-radius: 14px;
+  background: rgba(36, 52, 71, 0.05);
+}
+
+.check-item,
+.mini-card {
+  padding: 12px;
+}
+
+.check-item p,
+.mini-label {
+  color: #5b6778;
+}
+
+.check-item p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mini-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.mini-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.callout {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.callout-live {
+  background: rgba(43, 116, 86, 0.12);
+  color: #21563d;
+}
+
+.callout-idle {
+  background: rgba(120, 83, 38, 0.12);
+  color: #7b5426;
 }
 
 .subtle-error {
@@ -196,6 +261,13 @@ button.primary {
   color: #fff;
 }
 
+button.ghost-button {
+  width: auto;
+  padding: 6px 10px;
+  background: transparent;
+  color: #5b6778;
+}
+
 button.danger {
   background: #8f4c3d;
   color: #fff;
@@ -215,4 +287,9 @@ button.danger {
 .panel.actions {
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.onboarding-actions {
+  gap: 10px;
+  margin-top: 14px;
 }
