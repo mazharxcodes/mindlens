@@ -24,8 +24,8 @@
     "https://www.instagram.com/*",
     "http://127.0.0.1/*",
     "http://localhost/*",
-    "http://127.0.0.1:11434/*"
-
+    "http://127.0.0.1:11434/*",
+    "http://127.0.0.1:8787/*"
   ],
   "permissions": ["storage", "tabs"]
 }

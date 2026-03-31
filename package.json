@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/build.mjs --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ollama:proxy": "node scripts/ollama-proxy.mjs"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.292",
