@@ -52,6 +52,69 @@ export class InterventionController {
     return this.perspectiveService.getDiagnostics();
   }
 
+  async forceIntervention(
+    snapshot: BiasSnapshot,
+    options?: { bypassDismissals?: boolean }
+  ): Promise<PerspectiveIntervention | null> {
+    if (this.isGenerating) {
+      return null;
+    }
+
+    this.isGenerating = true;
+    this.pendingSnapshot = null;
+    this.pendingSnapshotCapturedAtMs = 0;
+    this.clearPendingTimer();
+    this.removeCard();
+    this.eventBus.emit({
+      type: "provider_status_updated",
+      createdAt: nowIso(),
+      diagnostics: this.perspectiveService.getDiagnostics()
+    });
+
+    let intervention: PerspectiveIntervention;
+    try {
+      intervention = await this.perspectiveService.generate(snapshot);
+    } catch (error) {
+      this.isGenerating = false;
+      this.eventBus.emit({
+        type: "intervention_generation_failed",
+        createdAt: nowIso(),
+        provider: this.perspectiveService.getDiagnostics().configuredMode,
+        error: error instanceof Error ? error.message : "Unknown generation failure."
+      });
+      this.eventBus.emit({
+        type: "provider_status_updated",
+        createdAt: nowIso(),
+        diagnostics: this.perspectiveService.getDiagnostics()
+      });
+      return null;
+    }
+
+    this.isGenerating = false;
+    this.eventBus.emit({
+      type: "provider_status_updated",
+      createdAt: nowIso(),
+      diagnostics: this.perspectiveService.getDiagnostics()
+    });
+
+    if (!options?.bypassDismissals && this.dismissals.has(intervention.headline)) {
+      return null;
+    }
+
+    this.currentIntervention = intervention;
+    this.lastShownAtMs = Date.now();
+    this.lastShownScore = snapshot.score;
+    this.markPatternShown(snapshot);
+    this.render(intervention);
+    this.eventBus.emit({
+      type: "intervention_shown",
+      createdAt: nowIso(),
+      intervention
+    });
+
+    return intervention;
+  }
+
   private async handleEvent(event: MindLensEvent): Promise<void> {
     switch (event.type) {
       case "bias_updated":
@@ -194,57 +257,7 @@ export class InterventionController {
     if (!this.shouldPrepareIntervention(snapshot) || !this.isReadyMomentToShow()) {
       return;
     }
-
-    this.isGenerating = true;
-    this.pendingSnapshot = null;
-    this.pendingSnapshotCapturedAtMs = 0;
-    this.clearPendingTimer();
-    this.eventBus.emit({
-      type: "provider_status_updated",
-      createdAt: nowIso(),
-      diagnostics: this.perspectiveService.getDiagnostics()
-    });
-
-    let intervention: PerspectiveIntervention;
-    try {
-      intervention = await this.perspectiveService.generate(snapshot);
-    } catch (error) {
-      this.isGenerating = false;
-      this.eventBus.emit({
-        type: "intervention_generation_failed",
-        createdAt: nowIso(),
-        provider: this.perspectiveService.getDiagnostics().configuredMode,
-        error: error instanceof Error ? error.message : "Unknown generation failure."
-      });
-      this.eventBus.emit({
-        type: "provider_status_updated",
-        createdAt: nowIso(),
-        diagnostics: this.perspectiveService.getDiagnostics()
-      });
-      return;
-    }
-
-    this.isGenerating = false;
-    this.eventBus.emit({
-      type: "provider_status_updated",
-      createdAt: nowIso(),
-      diagnostics: this.perspectiveService.getDiagnostics()
-    });
-
-    if (this.dismissals.has(intervention.headline)) {
-      return;
-    }
-
-    this.currentIntervention = intervention;
-    this.lastShownAtMs = Date.now();
-    this.lastShownScore = snapshot.score;
-    this.markPatternShown(snapshot);
-    this.render(intervention);
-    this.eventBus.emit({
-      type: "intervention_shown",
-      createdAt: nowIso(),
-      intervention
-    });
+    await this.forceIntervention(snapshot, { bypassDismissals: false });
   }
 
   private getPatternSignature(snapshot: BiasSnapshot): string {

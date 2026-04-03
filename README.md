@@ -313,6 +313,33 @@ It includes:
 - onboarding for first-time testers
 - tester readiness guidance
 - live bias snapshot
+
+## Debugging Forced Interventions
+
+For fast Ollama and intervention-copy testing, you can force an intervention directly from the Instagram Web tab in DevTools.
+
+Use the current live context, but bypass timing and feed buildup:
+
+```js
+await window.__MINDLENS_DEBUG__.forceIntervention()
+```
+
+Or provide a custom synthetic snapshot:
+
+```js
+await window.__MINDLENS_DEBUG__.forceIntervention({
+  dominantCategory: "relationships",
+  dominantSentiment: "negative",
+  dominantTone: "victimhood",
+  score: 0.92,
+  repeatedSignalRatio: 0.81
+})
+```
+
+This is useful when you want to:
+- verify Ollama generation without scrolling through a full loop
+- inspect the exact kind of suggestion MindLens would show
+- compare `local` vs `ollama` generation quickly
 - provider diagnostics
 - intervention threshold control
 - generation mode selection
