@@ -3,6 +3,7 @@
 MindLens is a Chrome extension for Instagram Web that detects repetitive feed patterns, estimates bias locally in the browser, and injects a short “wider lens” prompt to interrupt doomscrolling loops.
 
 It is a local-first prototype:
+
 - heuristic analysis by default
 - optional Ollama-based generation
 - no paid API required
@@ -54,6 +55,7 @@ After rebuilding, reload the extension from the extensions page.
 ## Core Flow
 
 MindLens:
+
 1. extracts visible Instagram feed content
 2. analyzes viewed posts locally
 3. computes a rolling bias score
@@ -100,6 +102,7 @@ If Ollama is unavailable or rejected, MindLens falls back to local generation.
 ## Popup and Testing
 
 The popup lets you:
+
 - inspect the live bias snapshot
 - adjust the intervention threshold
 - switch between `local`, `ollama`, and `remote` generation modes
@@ -113,7 +116,7 @@ If the popup looks stale after reloading the extension, refresh the Instagram ta
 To test prompt generation without waiting for the feed to build a loop, open DevTools on the Instagram tab and run:
 
 ```js
-await window.__MINDLENS_DEBUG__.forceIntervention()
+await window.__MINDLENS_DEBUG__.forceIntervention();
 ```
 
 Or test a custom synthetic scenario:
@@ -124,8 +127,8 @@ await window.__MINDLENS_DEBUG__.forceIntervention({
   dominantSentiment: "negative",
   dominantTone: "victimhood",
   score: 0.92,
-  repeatedSignalRatio: 0.81
-})
+  repeatedSignalRatio: 0.81,
+});
 ```
 
 This is the fastest way to verify whether Ollama is working and inspect the style of generated interventions.
@@ -138,6 +141,12 @@ This is the fastest way to verify whether Ollama is working and inspect the styl
 - Does not require a backend in the default setup
 - Only contacts Ollama or another provider if you explicitly enable that mode
 
+## Architecture
+
+High-level and low-level diagrams are available in:
+
+- [`docs/architecture.md`](https://github.com/mazharxcodes/mindlens/docs/architecture.md)
+
 ## Development
 
 ```bash
@@ -148,4 +157,4 @@ npm run typecheck
 
 ## License
 
-MIT. See [LICENSE](/Users/mohdekrama.mazhar/Desktop/Work/Personal/mindlens/LICENSE).
+MIT. See [LICENSE](https://github.com/mazharxcodes/mindlens/LICENSE).
