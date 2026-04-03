@@ -86,6 +86,15 @@ function formatCooldown(diagnostics: ProviderDiagnostics): string {
   return remainingMs > 0 ? formatDuration(remainingMs) : "ready";
 }
 
+function getProviderHelpText(diagnostics: ProviderDiagnostics | undefined): string {
+  const lastError = diagnostics?.lastError ?? "";
+  if (!/status 403/i.test(lastError) || !/Ollama/i.test(lastError)) {
+    return "";
+  }
+
+  return "Ollama is reachable, but it is rejecting the extension origin. Restart Ollama with OLLAMA_ORIGINS including chrome-extension://* or this extension's id.";
+}
+
 async function loadLiveState(): Promise<void> {
   state.onboardingComplete = (await getPopupPrefs()).onboardingComplete;
   const tab = await getActiveTab();
@@ -217,6 +226,7 @@ async function render(): Promise<void> {
   const liveBias = state.liveState?.biasSnapshot;
   const currentIntervention = state.liveState?.currentIntervention;
   const providerDiagnostics = state.liveState?.providerDiagnostics;
+  const providerHelpText = getProviderHelpText(providerDiagnostics);
 
   document.body.innerHTML = `
     <main class="popup-shell">
@@ -315,6 +325,7 @@ async function render(): Promise<void> {
             ? `<p class="subtle subtle-error">Last provider error: ${providerDiagnostics.lastError}</p>`
             : ""
         }
+        ${providerHelpText ? `<p class="subtle subtle-error">${providerHelpText}</p>` : ""}
         <form id="settings-form" class="form-stack">
           <label>
             <span>Mode</span>
