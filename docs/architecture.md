@@ -125,13 +125,3 @@ flowchart TD
   Control Room UI
 - [`src/harness/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/harness/index.ts)
   Replay Lab for deterministic testing
-
-## Suggested Talking Track
-
-When explaining MindLens to someone else, a good short walkthrough is:
-
-1. The extension watches Instagram Web posts as they enter view.
-2. It classifies what kind of content the user is consuming and how one-sided it is becoming.
-3. It builds a rolling bias score from recent viewed posts.
-4. When the score is high and the moment is right, it generates a fuller-perspective intervention.
-5. It tracks whether the user reads, expands, or dismisses that intervention.
