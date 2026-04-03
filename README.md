@@ -30,27 +30,30 @@ It is a local-first prototype:
 
 ## Quick Start
 
-### Prerequisites
-
 - Node.js 18+
 - npm
 - Google Chrome
-
-### Install and Build
 
 ```bash
 npm install
 npm run build
 ```
 
-### Load the Extension
-
 1. Open `chrome://extensions`
 2. Enable Developer Mode
 3. Click `Load unpacked`
 4. Select the `dist/` directory
+5. Open `https://www.instagram.com/`
+6. Click the MindLens extension icon to open Control Room
 
 After rebuilding, reload the extension from the extensions page.
+
+### Basic Use
+
+- Keep `Mode: Local` for the fastest zero-setup experience
+- Scroll Instagram Web normally
+- When the feed becomes repetitive enough, MindLens will show a wider-perspective prompt
+- Use the popup to adjust the intervention threshold if prompts feel too rare or too frequent
 
 ## Core Flow
 
@@ -101,13 +104,7 @@ If Ollama is unavailable or rejected, MindLens falls back to local generation.
 
 ## Popup and Testing
 
-The popup lets you:
-
-- inspect the live bias snapshot
-- adjust the intervention threshold
-- switch between `local`, `ollama`, and `remote` generation modes
-- review intervention metrics
-- open the replay lab
+The popup lets you inspect the live bias snapshot, change the intervention threshold, switch generation modes, review metrics, and open the replay lab.
 
 If the popup looks stale after reloading the extension, refresh the Instagram tab once.
 
