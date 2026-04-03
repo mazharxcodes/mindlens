@@ -145,7 +145,7 @@ This is the fastest way to verify whether Ollama is working and inspect the styl
 
 High-level and low-level diagrams are available in:
 
-- [`docs/architecture.md`](https://github.com/mazharxcodes/mindlens/docs/architecture.md)
+- [`docs/architecture.md`](https://github.com/mazharxcodes/mindlens/blob/main/docs/architecture.md)
 
 ## Development
 
@@ -157,4 +157,4 @@ npm run typecheck
 
 ## License
 
-MIT. See [LICENSE](https://github.com/mazharxcodes/mindlens/LICENSE).
+MIT. See [LICENSE](https://github.com/mazharxcodes/mindlens/blob/main/LICENSE).

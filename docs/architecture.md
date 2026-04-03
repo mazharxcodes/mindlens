@@ -44,31 +44,31 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[Instagram article enters DOM] --> B[feed-observer.ts detects post]
-    B --> C[extractor.ts builds InstagramPost]
-    C --> D[engagement-tracker.ts starts observing viewport]
-    D --> E[post_view_started event]
-    E --> F[local-analysis-engine.ts analyzes post once]
-    F --> G[local-analyzer.ts / heuristic-analysis-service.ts]
-    G --> H[post_analyzed event]
-    H --> I[bias-detector.ts updates sliding window]
-    I --> J[bias_updated event]
-    J --> K[intervention-controller.ts evaluates timing + cooldown gates]
-    K -->|no| L[wait for better moment]
-    K -->|yes| M[perspective-service.ts generate()]
-    M --> N[resilient-perspective-service.ts]
-    N --> O[local-perspective-service.ts]
-    N --> P[background runtime message]
-    P --> Q[background/index.ts]
-    Q --> R[Ollama or remote provider]
-    O --> S[PerspectiveIntervention]
+    A["Instagram article enters DOM"] --> B["feed-observer.ts detects post"]
+    B --> C["extractor.ts builds InstagramPost"]
+    C --> D["engagement-tracker.ts starts observing viewport"]
+    D --> E["post_view_started event"]
+    E --> F["local-analysis-engine.ts analyzes post once"]
+    F --> G["local-analyzer.ts + heuristic-analysis-service.ts"]
+    G --> H["post_analyzed event"]
+    H --> I["bias-detector.ts updates sliding window"]
+    I --> J["bias_updated event"]
+    J --> K["intervention-controller.ts evaluates timing and cooldown gates"]
+    K -->|no| L["wait for better moment"]
+    K -->|yes| M["perspective-service generates intervention"]
+    M --> N["resilient-perspective-service.ts"]
+    N --> O["local-perspective-service.ts"]
+    N --> P["background runtime message"]
+    P --> Q["background/index.ts"]
+    Q --> R["Ollama or remote provider"]
+    O --> S["PerspectiveIntervention"]
     R --> S
-    S --> T[intervention card rendered in page]
-    S --> U[intervention_shown event]
-    U --> V[metrics-tracker.ts updates counters]
-    V --> W[storage.ts persists metrics]
-    W --> X[(chrome.storage.local)]
-    X --> Y[popup/index.ts reads live metrics + settings]
+    S --> T["intervention card rendered in page"]
+    S --> U["intervention_shown event"]
+    U --> V["metrics-tracker.ts updates counters"]
+    V --> W["storage.ts persists metrics"]
+    W --> X[("chrome.storage.local")]
+    X --> Y["popup/index.ts reads live metrics and settings"]
 ```
 
 ### What this shows
@@ -83,47 +83,47 @@ flowchart TD
 
 ### Content Script Runtime
 
-- [`src/content/index.ts`](https://github.com/mazharxcodes/mindlens/src/content/index.ts)
+- [`src/content/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/index.ts)
   Bootstrap, debug API, wiring between modules
-- [`src/content/feed-observer.ts`](https://github.com/mazharxcodes/mindlens/src/content/feed-observer.ts)
+- [`src/content/feed-observer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/feed-observer.ts)
   Detects Instagram feed posts in the DOM
-- [`src/content/extractor.ts`](https://github.com/mazharxcodes/mindlens/src/content/extractor.ts)
+- [`src/content/extractor.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extractor.ts)
   Extracts normalized post text and identifiers
-- [`src/content/engagement-tracker.ts`](https://github.com/mazharxcodes/mindlens/src/content/engagement-tracker.ts)
+- [`src/content/engagement-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/engagement-tracker.ts)
   Tracks viewport entry and dwell timing
-- [`src/content/scroll-tracker.ts`](https://github.com/mazharxcodes/mindlens/src/content/scroll-tracker.ts)
+- [`src/content/scroll-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/scroll-tracker.ts)
   Emits scroll velocity/activity signals
-- [`src/content/local-analysis-engine.ts`](https://github.com/mazharxcodes/mindlens/src/content/local-analysis-engine.ts)
+- [`src/content/local-analysis-engine.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-analysis-engine.ts)
   Runs one-time analysis per viewed post
-- [`src/content/local-analyzer.ts`](https://github.com/mazharxcodes/mindlens/src/content/local-analyzer.ts)
+- [`src/content/local-analyzer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-analyzer.ts)
   Heuristic classifier logic
-- [`src/content/bias-detector.ts`](https://github.com/mazharxcodes/mindlens/src/content/bias-detector.ts)
+- [`src/content/bias-detector.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/bias-detector.ts)
   Sliding-window bias scoring
-- [`src/content/intervention-controller.ts`](https://github.com/mazharxcodes/mindlens/src/content/intervention-controller.ts)
+- [`src/content/intervention-controller.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/intervention-controller.ts)
   Prompt timing, rendering, dismissal, forced test prompts
-- [`src/content/metrics-tracker.ts`](https://github.com/mazharxcodes/mindlens/src/content/metrics-tracker.ts)
+- [`src/content/metrics-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/metrics-tracker.ts)
   Intervention metrics and persistence
 
 ### Provider Layer
 
-- [`src/content/perspective-service.ts`](https://github.com/mazharxcodes/mindlens/src/content/perspective-service.ts)
+- [`src/content/perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/perspective-service.ts)
   Perspective generation interface
-- [`src/content/local-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/src/content/local-perspective-service.ts)
+- [`src/content/local-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-perspective-service.ts)
   Built-in fallback provider
-- [`src/content/perspective-generator.ts`](https://github.com/mazharxcodes/mindlens/src/content/perspective-generator.ts)
+- [`src/content/perspective-generator.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/perspective-generator.ts)
   Local copy generation templates
-- [`src/content/resilient-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/src/content/resilient-perspective-service.ts)
+- [`src/content/resilient-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/resilient-perspective-service.ts)
   Fallback and provider health logic
-- [`src/content/provider-registry.ts`](https://github.com/mazharxcodes/mindlens/src/content/provider-registry.ts)
+- [`src/content/provider-registry.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/provider-registry.ts)
   Provider wiring
 
 ### Background and UI
 
-- [`src/background/index.ts`](https://github.com/mazharxcodes/mindlens/src/background/index.ts)
+- [`src/background/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/background/index.ts)
   Handles Ollama/remote generation requests
-- [`src/popup/index.ts`](https://github.com/mazharxcodes/mindlens/src/popup/index.ts)
+- [`src/popup/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/popup/index.ts)
   Control Room UI
-- [`src/harness/index.ts`](https://github.com/mazharxcodes/mindlens/src/harness/index.ts)
+- [`src/harness/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/harness/index.ts)
   Replay Lab for deterministic testing
 
 ## Suggested Talking Track
