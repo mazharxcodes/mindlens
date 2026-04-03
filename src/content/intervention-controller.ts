@@ -11,12 +11,13 @@ import { nowIso } from "./utils";
 const CARD_ID = "mindlens-intervention-card";
 const CARD_VISIBLE_CLASS = "mindlens-card-visible";
 const STYLE_ID = "mindlens-intervention-style";
-const COOLDOWN_MS = 90_000;
-const SCORE_DELTA_TO_RESHOW = 0.12;
-const QUIET_WINDOW_MS = 1800;
-const MAX_SCROLL_VELOCITY_FOR_SHOW = 900;
-const MIN_ACTIVE_VIEW_MS = 2500;
-const PATTERN_COOLDOWN_MS = 10 * 60_000;
+const COOLDOWN_MS = 30_000;
+const SCORE_DELTA_TO_RESHOW = 0.05;
+const QUIET_WINDOW_MS = 900;
+const MAX_SCROLL_VELOCITY_FOR_SHOW = 1400;
+const MIN_ACTIVE_VIEW_MS = 1200;
+const PATTERN_COOLDOWN_MS = 3 * 60_000;
+const PENDING_INTERVENTION_GRACE_MS = 8_000;
 
 export class InterventionController {
   private currentIntervention: PerspectiveIntervention | null = null;
@@ -30,6 +31,7 @@ export class InterventionController {
   private activeViewPostId: string | null = null;
   private activeViewStartedAtMs: number | null = null;
   private pendingSnapshot: BiasSnapshot | null = null;
+  private pendingSnapshotCapturedAtMs = 0;
   private pendingTimerId: number | null = null;
 
   constructor(
@@ -87,12 +89,19 @@ export class InterventionController {
 
   private async handleBiasUpdated(snapshot: BiasSnapshot): Promise<void> {
     if (!snapshot.shouldIntervene) {
-      this.pendingSnapshot = null;
-      this.clearPendingTimer();
+      if (!this.shouldKeepPendingSnapshot()) {
+        this.pendingSnapshot = null;
+        this.pendingSnapshotCapturedAtMs = 0;
+        this.clearPendingTimer();
+      }
       return;
     }
 
-    this.pendingSnapshot = snapshot;
+    if (!this.pendingSnapshot || snapshot.score >= this.pendingSnapshot.score) {
+      this.pendingSnapshot = snapshot;
+      this.pendingSnapshotCapturedAtMs = Date.now();
+    }
+
     if (!this.shouldPrepareIntervention(snapshot)) {
       return;
     }
@@ -147,6 +156,13 @@ export class InterventionController {
         return;
       }
 
+      if (!this.shouldKeepPendingSnapshot()) {
+        this.pendingSnapshot = null;
+        this.pendingSnapshotCapturedAtMs = 0;
+        this.clearPendingTimer();
+        return;
+      }
+
       if (!this.shouldPrepareIntervention(snapshot)) {
         return;
       }
@@ -167,6 +183,13 @@ export class InterventionController {
     }
   }
 
+  private shouldKeepPendingSnapshot(): boolean {
+    return (
+      Boolean(this.pendingSnapshot) &&
+      Date.now() - this.pendingSnapshotCapturedAtMs <= PENDING_INTERVENTION_GRACE_MS
+    );
+  }
+
   private async showIntervention(snapshot: BiasSnapshot): Promise<void> {
     if (!this.shouldPrepareIntervention(snapshot) || !this.isReadyMomentToShow()) {
       return;
@@ -174,6 +197,7 @@ export class InterventionController {
 
     this.isGenerating = true;
     this.pendingSnapshot = null;
+    this.pendingSnapshotCapturedAtMs = 0;
     this.clearPendingTimer();
     this.eventBus.emit({
       type: "provider_status_updated",

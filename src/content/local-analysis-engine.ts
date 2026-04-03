@@ -12,6 +12,11 @@ export class LocalAnalysisEngine {
   ) {}
 
   async analyze(post: InstagramPost): Promise<LocalContentAnalysis> {
+    const existingAnalysis = this.analyses.get(post.id);
+    if (existingAnalysis) {
+      return existingAnalysis;
+    }
+
     const analysis = await this.analysisService.analyze(post);
     this.analyses.set(post.id, analysis);
     this.eventBus.emit({

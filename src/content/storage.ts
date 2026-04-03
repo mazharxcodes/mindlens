@@ -24,6 +24,26 @@ export function createEmptyMetrics(): MindLensMetrics {
   return structuredClone(EMPTY_METRICS);
 }
 
+function normalizeMetrics(metrics?: Partial<MindLensMetrics> | null): MindLensMetrics {
+  const defaults = createEmptyMetrics();
+
+  return {
+    ...defaults,
+    ...metrics,
+    totals: {
+      ...defaults.totals,
+      ...metrics?.totals,
+      shownByProvider: {
+        ...defaults.totals.shownByProvider,
+        ...metrics?.totals?.shownByProvider
+      }
+    },
+    recentInterventions: Array.isArray(metrics?.recentInterventions)
+      ? metrics!.recentInterventions
+      : defaults.recentInterventions
+  };
+}
+
 export class MindLensStorage {
   async getMetrics(): Promise<MindLensMetrics> {
     if (!chrome.storage?.local) {
@@ -31,9 +51,9 @@ export class MindLensStorage {
     }
 
     const stored = await chrome.storage.local.get(METRICS_STORAGE_KEY);
-    const metrics = stored[METRICS_STORAGE_KEY] as MindLensMetrics | undefined;
+    const metrics = stored[METRICS_STORAGE_KEY] as Partial<MindLensMetrics> | undefined;
 
-    return metrics ?? createEmptyMetrics();
+    return normalizeMetrics(metrics);
   }
 
   async setMetrics(metrics: MindLensMetrics): Promise<void> {
@@ -42,7 +62,7 @@ export class MindLensStorage {
     }
 
     await chrome.storage.local.set({
-      [METRICS_STORAGE_KEY]: metrics
+      [METRICS_STORAGE_KEY]: normalizeMetrics(metrics)
     });
   }
 
