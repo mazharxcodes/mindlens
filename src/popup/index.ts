@@ -12,13 +12,15 @@ type PopupState = {
   tabId: number | null;
   liveState: GetLiveStateResponseMessage | null;
   onboardingComplete: boolean;
+  liveStateNotice: string | null;
 };
 
 const state: PopupState = {
   isInstagramTab: false,
   tabId: null,
   liveState: null,
-  onboardingComplete: false
+  onboardingComplete: false,
+  liveStateNotice: null
 };
 
 type PopupPrefs = {
@@ -90,9 +92,11 @@ async function loadLiveState(): Promise<void> {
   const isInstagramTab = Boolean(tab?.id && tab.url?.startsWith("https://www.instagram.com/"));
   state.isInstagramTab = isInstagramTab;
   state.tabId = tab?.id ?? null;
+  state.liveStateNotice = null;
 
   if (!isInstagramTab || !tab?.id) {
     state.liveState = null;
+    state.liveStateNotice = "Open Instagram Web in the active tab to see the live feed snapshot.";
     return;
   }
 
@@ -102,8 +106,16 @@ async function loadLiveState(): Promise<void> {
       tab.id,
       message
     )) as GetLiveStateResponseMessage;
-  } catch {
+  } catch (error) {
     state.liveState = null;
+    const errorMessage =
+      error instanceof Error ? error.message : "Unable to read the live Instagram state.";
+
+    state.liveStateNotice = /Receiving end does not exist|Could not establish connection/i.test(
+      errorMessage
+    )
+      ? "MindLens is loaded, but this Instagram tab still has the older page context. Refresh the Instagram tab once, then reopen Control Room."
+      : `Live snapshot unavailable: ${errorMessage}`;
   }
 }
 
@@ -187,6 +199,18 @@ function renderOnboarding(): string {
   `;
 }
 
+function renderLiveStateNotice(): string {
+  if (!state.liveStateNotice) {
+    return "";
+  }
+
+  return `
+    <div class="callout callout-warning">
+      ${state.liveStateNotice}
+    </div>
+  `;
+}
+
 async function render(): Promise<void> {
   const settings = state.liveState?.settings ?? (await settingsStore.getSettings());
   const metrics = state.liveState?.metrics ?? (await metricsStore.getMetrics());
@@ -197,9 +221,12 @@ async function render(): Promise<void> {
   document.body.innerHTML = `
     <main class="popup-shell">
       <section class="hero">
-        <div>
-          <p class="eyebrow">MindLens</p>
-          <h1>Control Room</h1>
+        <div class="brand-lockup">
+          <img class="brand-logo" src="mindlens-logo.svg" alt="MindLens logo" />
+          <div>
+            <p class="eyebrow">MindLens</p>
+            <h1>Control Room</h1>
+          </div>
         </div>
         <div class="pill ${state.isInstagramTab ? "pill-live" : "pill-idle"}">
           ${state.isInstagramTab ? "Instagram live" : "Open Instagram"}
@@ -217,6 +244,7 @@ async function render(): Promise<void> {
               : "Open Instagram Web in a tab before evaluating live feed behavior."
           }
         </div>
+        ${renderLiveStateNotice()}
         <div class="mini-grid">
           <div class="mini-card">
             <span class="mini-label">Access</span>
@@ -383,6 +411,7 @@ async function render(): Promise<void> {
       <section class="panel actions">
         <button id="harness-button" type="button">Open Replay Lab</button>
         <button id="refresh-button" type="button">Refresh Snapshot</button>
+        <button id="reload-tab-button" type="button">Reload Instagram Tab</button>
         <button id="reset-button" type="button" class="danger">Reset Settings And Metrics</button>
       </section>
     </main>
@@ -408,6 +437,14 @@ async function render(): Promise<void> {
   }
 
   document.getElementById("refresh-button")?.addEventListener("click", async () => {
+    await loadLiveState();
+    await render();
+  });
+
+  document.getElementById("reload-tab-button")?.addEventListener("click", async () => {
+    if (state.tabId) {
+      await chrome.tabs.reload(state.tabId);
+    }
     await loadLiveState();
     await render();
   });
@@ -470,6 +507,7 @@ async function render(): Promise<void> {
       }
     };
     state.onboardingComplete = false;
+    state.liveStateNotice = "Settings and metrics were reset. Refresh Instagram once to rebuild the live snapshot.";
     await render();
   });
 }

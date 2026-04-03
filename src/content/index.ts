@@ -22,10 +22,25 @@ async function bootstrapMindLens(): Promise<void> {
   const engagementTracker = new PostEngagementTracker(eventBus);
   const scrollTracker = new ScrollActivityTracker(eventBus);
   const metricsTracker = new MetricsTracker(eventBus, new MindLensStorage());
+  const detectedPosts = new Map<string, Parameters<typeof analysisEngine.analyze>[0]>();
+
+  eventBus.subscribe((event) => {
+    if (event.type !== "post_view_started") {
+      return;
+    }
+
+    const post = detectedPosts.get(event.postId);
+    if (!post) {
+      return;
+    }
+
+    void analysisEngine.analyze(post);
+  });
+
   const feedObserver = new InstagramFeedObserver({
     eventBus,
     onPostDetected: (article, post) => {
-      void analysisEngine.analyze(post);
+      detectedPosts.set(post.id, post);
       engagementTracker.observe(article, post);
     }
   });
