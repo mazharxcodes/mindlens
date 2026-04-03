@@ -16,7 +16,6 @@ type ActiveInterventionState = {
   ignoreTimerId: number | null;
 };
 
-const IGNORE_AFTER_MS = 12_000;
 const RECENT_LIMIT = 25;
 const MEANINGFUL_SCROLL_DELTA = 48;
 
@@ -97,11 +96,7 @@ export class MetricsTracker {
       intervention,
       shownAtMs: Date.now(),
       hasMeaningfulInteraction: false,
-      ignoreTimerId: window.setTimeout(() => {
-        if (this.activeIntervention?.intervention.id === intervention.id && !this.activeIntervention.hasMeaningfulInteraction) {
-          this.markIgnored(this.activeIntervention);
-        }
-      }, IGNORE_AFTER_MS)
+      ignoreTimerId: null
     };
 
     this.activeIntervention = activeIntervention;

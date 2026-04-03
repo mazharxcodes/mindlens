@@ -227,9 +227,64 @@ ollama run llama3.2:3b "hello"
 Then in the popup:
 - set generation mode to `ollama`
 - confirm the Ollama endpoint is `http://127.0.0.1:11434/api/generate`
+- confirm the Ollama model is `llama3.2:3b`
 - save and reload the Instagram tab
 
 If Ollama is unavailable, the extension falls back to the built-in local generator.
+
+Recommended MindLens Control Room values:
+
+```text
+Mode: Ollama
+Ollama Model: llama3.2:3b
+Ollama Endpoint: http://127.0.0.1:11434/api/generate
+```
+
+### Ollama Origin Setup For Chrome Extensions
+
+If `curl http://127.0.0.1:11434/api/tags` works but MindLens shows an Ollama `403`, Ollama is usually rejecting the browser extension origin.
+
+You can verify that with:
+
+```bash
+curl http://127.0.0.1:11434/api/generate \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: chrome-extension://test' \
+  -d '{"model":"llama3.2:3b","prompt":"Say hello briefly.","stream":false}'
+```
+
+If that returns `403`, restart Ollama with `OLLAMA_ORIGINS` set to allow the extension origin.
+
+Broad local-dev option:
+
+```bash
+OLLAMA_ORIGINS="chrome-extension://*" ollama serve
+```
+
+Stricter option:
+
+```bash
+OLLAMA_ORIGINS="chrome-extension://<your-extension-id>" ollama serve
+```
+
+After restarting Ollama:
+- reload the extension in `chrome://extensions`
+- refresh the Instagram tab
+- test Ollama mode again
+
+Complete local setup example:
+
+```bash
+OLLAMA_ORIGINS="chrome-extension://*" ollama serve
+```
+
+Then use these values in MindLens Control Room:
+
+```text
+Mode: Ollama
+Ollama Model: llama3.2:3b
+Ollama Endpoint: http://127.0.0.1:11434/api/generate
+```
 
 ## Replay Lab
 

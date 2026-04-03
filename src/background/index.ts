@@ -9,6 +9,18 @@ type RemotePerspectivePayload = {
   body: string;
 };
 
+function getFriendlyOllamaError(status: number, endpoint: string): string {
+  if (status === 403) {
+    return [
+      `Ollama rejected the extension request with status 403 at ${endpoint}.`,
+      "This usually means Ollama is not allowing the chrome-extension origin.",
+      "Start Ollama with OLLAMA_ORIGINS including chrome-extension://* or your specific extension id."
+    ].join(" ");
+  }
+
+  return `Ollama generation failed with status ${status}.`;
+}
+
 function createPrompt(message: GeneratePerspectiveRequestMessage): string {
   const { snapshot } = message.payload;
 
@@ -110,7 +122,7 @@ async function generatePerspectiveWithOllama(
   if (!response.ok) {
     return {
       ok: false,
-      error: `Ollama generation failed with status ${response.status}.`
+      error: getFriendlyOllamaError(response.status, settings.ollamaEndpoint)
     };
   }
 
