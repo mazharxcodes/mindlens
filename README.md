@@ -120,11 +120,11 @@ Or test a custom synthetic scenario:
 
 ```js
 await window.__MINDLENS_DEBUG__.forceIntervention({
-  dominantCategory: "relationships",
+  dominantCategory: "career",
   dominantSentiment: "negative",
-  dominantTone: "victimhood",
-  score: 0.92,
-  repeatedSignalRatio: 0.81,
+  dominantTone: "blaming",
+  score: 0.88,
+  repeatedSignalRatio: 0.79,
 });
 ```
 
