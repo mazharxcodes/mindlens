@@ -25,17 +25,25 @@ function createPrompt(message: GeneratePerspectiveRequestMessage): string {
   const { snapshot } = message.payload;
 
   return [
-    "You write short, neutral perspective prompts for an Instagram feed intervention.",
+    "You write calm, emotionally intelligent perspective cards for an Instagram feed intervention.",
     "Return strict JSON with keys headline and body.",
-    "The tone must be non-judgmental, subtle, and thought-provoking.",
-    "Avoid preachy or corrective language.",
+    "The writing should feel human, grounded, and easy to read.",
+    "Do not sound preachy, superior, therapeutic, or corrective.",
+    "Do not argue with the post directly.",
+    "Do not write a one-line counterpoint or slogan.",
+    "Lean slightly toward a both-sides-of-the-coin perspective.",
+    "Instead, offer a fuller perspective: acknowledge why the repeated content can feel convincing, then widen the frame with nuance, tradeoffs, context, and what the other side of the picture might hold.",
+    "The best output should feel like a thoughtful friend helping someone zoom out, not a system scolding them.",
+    "It is okay to gently suggest that two conflicting things can both contain truth.",
     `Bias score: ${snapshot.score}`,
     `Dominant category: ${snapshot.dominantCategory ?? "general"}`,
     `Dominant sentiment: ${snapshot.dominantSentiment ?? "neutral"}`,
     `Dominant tone: ${snapshot.dominantTone ?? "balanced"}`,
     `Repeated signal ratio: ${snapshot.repeatedSignalRatio}`,
-    "Keep headline under 12 words.",
-    "Keep body to 1-2 short sentences."
+    "Keep headline under 12 words and make it warm, not clicky.",
+    "Write body as 2-3 natural sentences.",
+    "Aim for roughly 45-80 words total in the body.",
+    "Avoid hashtags, bullet points, quotes, and emojis."
   ].join("\n");
 }
 
