@@ -1,163 +1,33 @@
 # MindLens
 
-MindLens is a Chrome extension for Instagram Web that detects repetitive feed patterns, estimates content bias locally in the browser, and injects subtle counter-perspectives to break passive doomscrolling loops.
+MindLens is a Chrome extension for Instagram Web that detects repetitive feed patterns, estimates bias locally in the browser, and injects a short “wider lens” prompt to interrupt doomscrolling loops.
 
-This project is built as a production-shaped prototype:
-- heuristic-first and lightweight by default
-- optional local AI generation through Ollama
-- no paid API required for the current version
-- no backend dependency required for the default setup
+It is a local-first prototype:
+- heuristic analysis by default
+- optional Ollama-based generation
+- no paid API required
+- no Instagram backend access
 
-## What It Does
+## Features
 
-MindLens watches the Instagram Web feed and:
-- extracts visible post text from the DOM
-- classifies content locally by category, sentiment, and tone
-- tracks dwell time and scroll behavior
-- computes a rolling bias score over recent posts
-- shows a small intervention card when a one-sided pattern becomes strong enough
-- tracks whether the intervention was ignored, expanded, or dismissed
-
-The goal is not to argue with the user. It is to introduce nuance at the right moment, in a restrained way.
-
-## Current Capabilities
-
-- Chrome Extension built with Manifest V3
-- Instagram Web content script
-- resilient post text extraction from feed `article` nodes
-- local heuristic classifier with:
-  - weighted category scoring
-  - sentiment scoring
-  - tone detection
-  - confidence calibration
-  - hashtag parsing
-  - basic negation handling
-- sliding-window bias detection
-- intervention timing logic with anti-spam controls
-- provider system for perspective generation:
-  - `local`
-  - `ollama`
-  - `remote` architecture path
+- Manifest V3 Chrome extension for Instagram Web
+- DOM-based post extraction from feed `article` nodes
+- local classification for category, sentiment, tone, intensity, and confidence
+- rolling bias score over recent viewed posts
+- subtle intervention card with expandable copy
 - popup control room for settings and metrics
-- replay harness for repeatable scenario testing
-- local metrics storage in `chrome.storage.local`
-
-## What It Does Not Do
-
-- It does not work on the Instagram mobile app
-- It does not integrate with Instagram backend APIs
-- It does not require OpenAI or any paid API to run the current default version
-- It does not send browsing data to a backend unless you explicitly add and enable a remote provider later
+- replay lab for repeatable scenario testing
+- local storage for settings and intervention metrics
 
 ## Tech Stack
 
 - TypeScript
-- Chrome Extension (Manifest V3)
+- Chrome Extension APIs
 - esbuild
-- Chrome Storage API
-- Optional Ollama for local model-based generation
+- `chrome.storage.local`
+- optional Ollama for local model generation
 
-## Project Structure
-
-```text
-public/
-  manifest.json
-  popup.html
-  popup.css
-  harness.html
-  harness.css
-
-scripts/
-  build.mjs
-
-src/
-  background/
-    index.ts
-  content/
-    extractor.ts
-    feed-observer.ts
-    local-analyzer.ts
-    local-analysis-engine.ts
-    bias-detector.ts
-    intervention-controller.ts
-    metrics-tracker.ts
-    settings-store.ts
-    provider-registry.ts
-    ...
-  popup/
-    index.ts
-  harness/
-    fixtures.ts
-    index.ts
-  shared/
-    runtime.ts
-```
-
-## Architecture Overview
-
-### 1. Content Extraction
-
-The content script scans Instagram feed `article` elements and extracts:
-- visible text
-- image alt text
-- post identity hints such as permalink or timestamp
-
-### 2. Local Analysis
-
-Posts are analyzed in-browser using a heuristic classifier that returns:
-
-```ts
-{
-  category,
-  sentiment,
-  tone,
-  intensity,
-  confidence,
-  sentimentScore,
-  categoryScores,
-  toneScores,
-  hashtags,
-  matchedSignals
-}
-```
-
-### 3. Bias Detection
-
-The bias detector maintains a recent sliding window and computes:
-- category dominance
-- sentiment skew
-- tone skew
-- repeated signal ratio
-- average confidence
-- a final bias score
-
-### 4. Perspective Generation
-
-MindLens supports multiple perspective providers:
-- `local`: built-in template-based generation
-- `ollama`: local model generation via Ollama
-- `remote`: reserved for future hosted generation
-
-### 5. Intervention Timing
-
-Interventions are delayed until the user reaches a better moment:
-- lower scroll velocity
-- short quiet window
-- enough dwell time on the active post
-- cooldowns to avoid repetitive prompting
-
-### 6. Metrics
-
-The extension tracks:
-- shown
-- expanded
-- dismissed
-- ignored
-- pause after shown
-- generation failures
-- usage by provider
-
-## Setup
+## Quick Start
 
 ### Prerequisites
 
@@ -165,7 +35,7 @@ The extension tracks:
 - npm
 - Google Chrome
 
-### Install
+### Install and Build
 
 ```bash
 npm install
@@ -179,60 +49,36 @@ npm run build
 3. Click `Load unpacked`
 4. Select the `dist/` directory
 
-After rebuilding, reload the extension from the Chrome extensions page.
+After rebuilding, reload the extension from the extensions page.
 
-## Development
+## Core Flow
 
-### Build Once
+MindLens:
+1. extracts visible Instagram feed content
+2. analyzes viewed posts locally
+3. computes a rolling bias score
+4. generates a fuller-perspective intervention
+5. tracks whether the user expands or dismisses it
 
-```bash
-npm run build
-```
+By default, analysis stays in-browser and generation falls back to a built-in local writer.
 
-### Watch Mode
+## Ollama Setup
 
-```bash
-npm run dev
-```
-
-### Type Check
-
-```bash
-npm run typecheck
-```
-
-## Using MindLens
-
-### Default Free Mode
-
-The default version works without any AI provider setup.
-
-Use the extension popup to:
-- see live feed bias state
-- adjust intervention threshold
-- inspect metrics
-- open the replay lab
-
-### Optional Ollama Mode
-
-If you want local model-generated intervention copy, install and run Ollama.
-
-Example:
+Pull a local model:
 
 ```bash
 ollama pull llama3.2:3b
-ollama run llama3.2:3b "hello"
 ```
 
-Then in the popup:
-- set generation mode to `ollama`
-- confirm the Ollama endpoint is `http://127.0.0.1:11434/api/generate`
-- confirm the Ollama model is `llama3.2:3b`
-- save and reload the Instagram tab
+Start Ollama with extension-origin access enabled:
 
-If Ollama is unavailable, the extension falls back to the built-in local generator.
+```bash
+OLLAMA_ORIGINS="chrome-extension://*" ollama serve
+```
 
-Recommended MindLens Control Room values:
+If you prefer a stricter setup, replace `*` with your extension id.
+
+Use these values in MindLens Control Room:
 
 ```text
 Mode: Ollama
@@ -240,11 +86,7 @@ Ollama Model: llama3.2:3b
 Ollama Endpoint: http://127.0.0.1:11434/api/generate
 ```
 
-### Ollama Origin Setup For Chrome Extensions
-
-If `curl http://127.0.0.1:11434/api/tags` works but MindLens shows an Ollama `403`, Ollama is usually rejecting the browser extension origin.
-
-You can verify that with:
+If MindLens shows an Ollama `403`, verify it with:
 
 ```bash
 curl http://127.0.0.1:11434/api/generate \
@@ -253,78 +95,28 @@ curl http://127.0.0.1:11434/api/generate \
   -d '{"model":"llama3.2:3b","prompt":"Say hello briefly.","stream":false}'
 ```
 
-If that returns `403`, restart Ollama with `OLLAMA_ORIGINS` set to allow the extension origin.
+If Ollama is unavailable or rejected, MindLens falls back to local generation.
 
-Broad local-dev option:
+## Popup and Testing
 
-```bash
-OLLAMA_ORIGINS="chrome-extension://*" ollama serve
-```
+The popup lets you:
+- inspect the live bias snapshot
+- adjust the intervention threshold
+- switch between `local`, `ollama`, and `remote` generation modes
+- review intervention metrics
+- open the replay lab
 
-Stricter option:
-
-```bash
-OLLAMA_ORIGINS="chrome-extension://<your-extension-id>" ollama serve
-```
-
-After restarting Ollama:
-- reload the extension in `chrome://extensions`
-- refresh the Instagram tab
-- test Ollama mode again
-
-Complete local setup example:
-
-```bash
-OLLAMA_ORIGINS="chrome-extension://*" ollama serve
-```
-
-Then use these values in MindLens Control Room:
-
-```text
-Mode: Ollama
-Ollama Model: llama3.2:3b
-Ollama Endpoint: http://127.0.0.1:11434/api/generate
-```
-
-## Replay Lab
-
-MindLens includes an internal replay harness for repeatable testing.
-
-Open the popup and click `Open Replay Lab`.
-
-The harness lets you:
-- replay curated feed scenarios
-- inspect resulting bias scores
-- preview generated interventions
-- export replay output as JSON
-
-Included sample scenarios:
-- Relationship Doom Loop
-- Hustle Grind Loop
-- Mixed Balanced Feed
-
-This is useful for regression testing and calibration without relying on live Instagram behavior.
-
-## Popup Features
-
-The popup acts as a tester-facing control room.
-
-It includes:
-- onboarding for first-time testers
-- tester readiness guidance
-- live bias snapshot
+If the popup looks stale after reloading the extension, refresh the Instagram tab once.
 
 ## Debugging Forced Interventions
 
-For fast Ollama and intervention-copy testing, you can force an intervention directly from the Instagram Web tab in DevTools.
-
-Use the current live context, but bypass timing and feed buildup:
+To test prompt generation without waiting for the feed to build a loop, open DevTools on the Instagram tab and run:
 
 ```js
 await window.__MINDLENS_DEBUG__.forceIntervention()
 ```
 
-Or provide a custom synthetic snapshot:
+Or test a custom synthetic scenario:
 
 ```js
 await window.__MINDLENS_DEBUG__.forceIntervention({
@@ -336,57 +128,17 @@ await window.__MINDLENS_DEBUG__.forceIntervention({
 })
 ```
 
-This is useful when you want to:
-- verify Ollama generation without scrolling through a full loop
-- inspect the exact kind of suggestion MindLens would show
-- compare `local` vs `ollama` generation quickly
-- provider diagnostics
-- intervention threshold control
-- generation mode selection
-- metrics summary
-- recent intervention history
+This is the fastest way to verify whether Ollama is working and inspect the style of generated interventions.
 
-## Permissions and Privacy
-
-MindLens is intentionally scoped narrowly.
+## Privacy
 
 - Runs only on `instagram.com`
-- Reads visible text from the current Instagram Web feed
-- Stores metrics and settings locally in the browser
-- Does not require a backend for default operation
-- Only calls an external/local generation endpoint if you explicitly enable that provider
+- Reads visible feed text from the current page
+- Stores settings and metrics locally in the browser
+- Does not require a backend in the default setup
+- Only contacts Ollama or another provider if you explicitly enable that mode
 
-## Reliability Notes
-
-- If the popup shows stale or empty live data after reloading the extension, refresh the Instagram tab once
-- If you reload the extension while an old content script is still active in the page, Chrome may show `Extension context invalidated` until the page is refreshed
-- If Ollama mode fails, MindLens should fall back to local generation
-
-## Current Product Status
-
-This repository is a strong v1 prototype with production-minded architecture:
-- modular TypeScript code
-- provider abstraction
-- replayable test harness
-- local-first default behavior
-- tester-friendly popup UX
-
-It is ready for:
-- internal testing
-- product demos
-- architecture review
-- resume/portfolio presentation
-
-## Roadmap Ideas
-
-Likely next steps:
-- more realistic replay fixtures
-- exportable session summaries
-- richer onboarding and options page
-- stronger classifier calibration using collected replay data
-- hosted provider integration when spending is justified
-
-## Scripts
+## Development
 
 ```bash
 npm run build
@@ -396,4 +148,4 @@ npm run typecheck
 
 ## License
 
-This project is licensed under the MIT License. See [`LICENSE`](https://github.com/mazharxcodes/mindlens/blob/dev/LICENSE).
+MIT. See [LICENSE](/Users/mohdekrama.mazhar/Desktop/Work/Personal/mindlens/LICENSE).
