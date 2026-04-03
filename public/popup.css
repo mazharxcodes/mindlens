@@ -23,7 +23,8 @@ body {
 .stat-grid,
 .provider-strip,
 .panel-header,
-.onboarding-actions {
+.onboarding-actions,
+.brand-lockup {
   display: flex;
 }
 
@@ -31,13 +32,27 @@ body {
 .panel.actions,
 .recent-row,
 .panel-header,
-.onboarding-actions {
+.onboarding-actions,
+.brand-lockup {
   justify-content: space-between;
   align-items: center;
 }
 
 .hero {
   margin-bottom: 14px;
+}
+
+.brand-lockup {
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(24, 37, 49, 0.16);
 }
 
 .eyebrow {
@@ -168,6 +183,12 @@ small {
   color: #7b5426;
 }
 
+.callout-warning {
+  margin-top: 12px;
+  background: rgba(143, 76, 61, 0.12);
+  color: #8f4c3d;
+}
+
 .subtle-error {
   color: #8f4c3d;
 }
@@ -221,6 +242,15 @@ small {
 .form-stack {
   display: grid;
   gap: 12px;
+}
+
+.panel.actions {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel.actions button {
+  flex: 1 1 calc(50% - 10px);
 }
 
 label span {

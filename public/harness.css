@@ -19,10 +19,27 @@ body {
 }
 
 .hero,
-.panel-header {
+.panel-header,
+.brand-lockup {
   display: flex;
   align-items: center;
+}
+
+.hero,
+.panel-header {
   justify-content: space-between;
+}
+
+.brand-lockup {
+  gap: 14px;
+}
+
+.brand-logo {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  border-radius: 22px;
+  box-shadow: 0 16px 38px rgba(24, 37, 49, 0.16);
 }
 
 .eyebrow {

@@ -106,10 +106,13 @@ async function render(result?: HarnessRunSummary): Promise<void> {
   document.body.innerHTML = `
     <main class="harness-shell">
       <section class="hero">
-        <div>
-          <p class="eyebrow">MindLens Harness</p>
-          <h1>Replay Lab</h1>
-          <p class="subtitle">Run repeatable feed scenarios without relying on live Instagram.</p>
+        <div class="brand-lockup">
+          <img class="brand-logo" src="mindlens-logo.svg" alt="MindLens logo" />
+          <div>
+            <p class="eyebrow">MindLens Harness</p>
+            <h1>Replay Lab</h1>
+            <p class="subtitle">Run repeatable feed scenarios without relying on live Instagram.</p>
+          </div>
         </div>
         <div class="provider-pill">Mode: ${settings.generationMode}</div>
       </section>
