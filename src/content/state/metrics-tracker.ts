@@ -1,12 +1,12 @@
-import { MindLensEventBus } from "./event-bus";
+import { MindLensEventBus } from "../core/event-bus";
 import { createEmptyMetrics, MindLensStorage } from "./storage";
 import {
   InterventionMetricRecord,
   MindLensEvent,
   MindLensMetrics,
   PerspectiveIntervention
-} from "./types";
-import { nowIso } from "./utils";
+} from "../core/types";
+import { nowIso } from "../core/utils";
 
 type ActiveInterventionState = {
   intervention: PerspectiveIntervention;

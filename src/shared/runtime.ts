@@ -1,4 +1,9 @@
-import { BiasSnapshot, MindLensMetrics, PerspectiveIntervention, ProviderDiagnostics } from "../content/types";
+import {
+  BiasSnapshot,
+  MindLensMetrics,
+  PerspectiveIntervention,
+  ProviderDiagnostics
+} from "../content/core/types";
 
 export type MindLensSettings = {
   analysisMode: "heuristic";

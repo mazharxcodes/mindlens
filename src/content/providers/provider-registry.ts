@@ -1,10 +1,10 @@
-import { MindLensSettings } from "../shared/runtime";
-import { AnalysisService } from "./analysis-service";
-import { HeuristicAnalysisService } from "./heuristic-analysis-service";
-import { LocalPerspectiveService } from "./local-perspective-service";
-import { PerspectiveService } from "./perspective-service";
-import { RemotePerspectiveService } from "./remote-perspective-service";
-import { ResilientPerspectiveService } from "./resilient-perspective-service";
+import { MindLensSettings } from "../../shared/runtime";
+import { AnalysisService } from "../analysis/analysis-service";
+import { HeuristicAnalysisService } from "../analysis/heuristic-analysis-service";
+import { LocalPerspectiveService } from "../interventions/local-perspective-service";
+import { PerspectiveService } from "../interventions/perspective-service";
+import { RemotePerspectiveService } from "../interventions/remote-perspective-service";
+import { ResilientPerspectiveService } from "../interventions/resilient-perspective-service";
 
 export type MindLensProviders = {
   analysisService: AnalysisService;

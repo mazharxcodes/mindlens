@@ -1,15 +1,15 @@
-import { BiasDetector } from "./bias-detector";
-import { PostEngagementTracker } from "./engagement-tracker";
-import { MindLensEventBus } from "./event-bus";
-import { InstagramFeedObserver } from "./feed-observer";
-import { InterventionController } from "./intervention-controller";
-import { LocalAnalysisEngine } from "./local-analysis-engine";
-import { MetricsTracker } from "./metrics-tracker";
-import { createProviders } from "./provider-registry";
-import { ScrollActivityTracker } from "./scroll-tracker";
-import { MindLensSettingsStore } from "./settings-store";
-import { MindLensStorage } from "./storage";
-import { BiasSnapshot } from "./types";
+import { BiasDetector } from "./analysis/bias-detector";
+import { LocalAnalysisEngine } from "./analysis/local-analysis-engine";
+import { MindLensEventBus } from "./core/event-bus";
+import { BiasSnapshot } from "./core/types";
+import { PostEngagementTracker } from "./extraction/engagement-tracker";
+import { InstagramFeedObserver } from "./extraction/feed-observer";
+import { ScrollActivityTracker } from "./extraction/scroll-tracker";
+import { InterventionController } from "./interventions/intervention-controller";
+import { createProviders } from "./providers/provider-registry";
+import { MetricsTracker } from "./state/metrics-tracker";
+import { MindLensSettingsStore } from "./state/settings-store";
+import { MindLensStorage } from "./state/storage";
 import { GetLiveStateRequestMessage, GetLiveStateResponseMessage } from "../shared/runtime";
 
 async function bootstrapMindLens(): Promise<void> {

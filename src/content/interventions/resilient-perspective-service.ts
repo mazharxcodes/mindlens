@@ -1,5 +1,5 @@
 import { PerspectiveService } from "./perspective-service";
-import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "./types";
+import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "../core/types";
 
 const FAILURE_COOLDOWN_MS = 45_000;
 

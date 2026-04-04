@@ -85,36 +85,36 @@ flowchart TD
 
 - [`src/content/index.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/index.ts)
   Bootstrap, debug API, wiring between modules
-- [`src/content/feed-observer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/feed-observer.ts)
+- [`src/content/extraction/feed-observer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extraction/feed-observer.ts)
   Detects Instagram feed posts in the DOM
-- [`src/content/extractor.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extractor.ts)
+- [`src/content/extraction/extractor.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extraction/extractor.ts)
   Extracts normalized post text and identifiers
-- [`src/content/engagement-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/engagement-tracker.ts)
+- [`src/content/extraction/engagement-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extraction/engagement-tracker.ts)
   Tracks viewport entry and dwell timing
-- [`src/content/scroll-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/scroll-tracker.ts)
+- [`src/content/extraction/scroll-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/extraction/scroll-tracker.ts)
   Emits scroll velocity/activity signals
-- [`src/content/local-analysis-engine.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-analysis-engine.ts)
+- [`src/content/analysis/local-analysis-engine.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/analysis/local-analysis-engine.ts)
   Runs one-time analysis per viewed post
-- [`src/content/local-analyzer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-analyzer.ts)
+- [`src/content/analysis/local-analyzer.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/analysis/local-analyzer.ts)
   Heuristic classifier logic
-- [`src/content/bias-detector.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/bias-detector.ts)
+- [`src/content/analysis/bias-detector.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/analysis/bias-detector.ts)
   Sliding-window bias scoring
-- [`src/content/intervention-controller.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/intervention-controller.ts)
+- [`src/content/interventions/intervention-controller.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/interventions/intervention-controller.ts)
   Prompt timing, rendering, dismissal, forced test prompts
-- [`src/content/metrics-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/metrics-tracker.ts)
+- [`src/content/state/metrics-tracker.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/state/metrics-tracker.ts)
   Intervention metrics and persistence
 
 ### Provider Layer
 
-- [`src/content/perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/perspective-service.ts)
+- [`src/content/interventions/perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/interventions/perspective-service.ts)
   Perspective generation interface
-- [`src/content/local-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/local-perspective-service.ts)
+- [`src/content/interventions/local-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/interventions/local-perspective-service.ts)
   Built-in fallback provider
-- [`src/content/perspective-generator.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/perspective-generator.ts)
+- [`src/content/interventions/perspective-generator.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/interventions/perspective-generator.ts)
   Local copy generation templates
-- [`src/content/resilient-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/resilient-perspective-service.ts)
+- [`src/content/interventions/resilient-perspective-service.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/interventions/resilient-perspective-service.ts)
   Fallback and provider health logic
-- [`src/content/provider-registry.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/provider-registry.ts)
+- [`src/content/providers/provider-registry.ts`](https://github.com/mazharxcodes/mindlens/blob/main/src/content/providers/provider-registry.ts)
   Provider wiring
 
 ### Background and UI

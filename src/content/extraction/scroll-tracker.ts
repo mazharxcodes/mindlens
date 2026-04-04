@@ -1,5 +1,5 @@
-import { MindLensEventBus } from "./event-bus";
-import { nowIso } from "./utils";
+import { MindLensEventBus } from "../core/event-bus";
+import { nowIso } from "../core/utils";
 
 export class ScrollActivityTracker {
   private lastScrollY = window.scrollY;

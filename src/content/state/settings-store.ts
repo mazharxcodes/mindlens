@@ -1,4 +1,4 @@
-import { MindLensSettings } from "../shared/runtime";
+import { MindLensSettings } from "../../shared/runtime";
 
 const SETTINGS_STORAGE_KEY = "mindlens.settings.v1";
 

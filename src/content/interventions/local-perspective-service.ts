@@ -1,6 +1,6 @@
 import { generatePerspectiveIntervention } from "./perspective-generator";
 import { PerspectiveService } from "./perspective-service";
-import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "./types";
+import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "../core/types";
 
 export class LocalPerspectiveService implements PerspectiveService {
   async generate(snapshot: BiasSnapshot): Promise<PerspectiveIntervention> {
