@@ -1,4 +1,4 @@
-import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "./types";
+import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics } from "../core/types";
 
 export interface PerspectiveService {
   generate(snapshot: BiasSnapshot): Promise<PerspectiveIntervention>;

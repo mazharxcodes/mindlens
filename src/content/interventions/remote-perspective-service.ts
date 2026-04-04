@@ -2,9 +2,9 @@ import {
   GeneratePerspectiveRequestMessage,
   GeneratePerspectiveResponseMessage,
   MindLensSettings
-} from "../shared/runtime";
+} from "../../shared/runtime";
 import { PerspectiveService } from "./perspective-service";
-import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics, ProviderName } from "./types";
+import { BiasSnapshot, PerspectiveIntervention, ProviderDiagnostics, ProviderName } from "../core/types";
 
 export class RemotePerspectiveService implements PerspectiveService {
   constructor(private readonly settings: MindLensSettings) {}

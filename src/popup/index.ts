@@ -1,7 +1,7 @@
 import { GetLiveStateRequestMessage, GetLiveStateResponseMessage } from "../shared/runtime";
-import { MindLensSettingsStore, getDefaultSettings } from "../content/settings-store";
-import { MindLensStorage, createEmptyMetrics } from "../content/storage";
-import { ProviderDiagnostics } from "../content/types";
+import { MindLensSettingsStore, getDefaultSettings } from "../content/state/settings-store";
+import { MindLensStorage, createEmptyMetrics } from "../content/state/storage";
+import { ProviderDiagnostics } from "../content/core/types";
 
 const settingsStore = new MindLensSettingsStore();
 const metricsStore = new MindLensStorage();

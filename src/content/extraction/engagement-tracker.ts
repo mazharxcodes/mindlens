@@ -1,6 +1,6 @@
-import { MindLensEventBus } from "./event-bus";
-import { InstagramPost } from "./types";
-import { nowIso } from "./utils";
+import { MindLensEventBus } from "../core/event-bus";
+import { InstagramPost } from "../core/types";
+import { nowIso } from "../core/utils";
 
 type ActiveViewState = {
   startedAtMs: number;

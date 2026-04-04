@@ -1,12 +1,12 @@
-import { MindLensEventBus } from "./event-bus";
+import { MindLensEventBus } from "../core/event-bus";
 import { PerspectiveService } from "./perspective-service";
 import {
   BiasSnapshot,
   MindLensEvent,
   PerspectiveIntervention,
   ProviderDiagnostics
-} from "./types";
-import { nowIso } from "./utils";
+} from "../core/types";
+import { nowIso } from "../core/utils";
 
 const CARD_ID = "mindlens-intervention-card";
 const CARD_VISIBLE_CLASS = "mindlens-card-visible";

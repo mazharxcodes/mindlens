@@ -1,5 +1,11 @@
-import { BiasSnapshot, ContentCategory, PerspectiveIntervention, SentimentLabel, ToneLabel } from "./types";
-import { nowIso } from "./utils";
+import {
+  BiasSnapshot,
+  ContentCategory,
+  PerspectiveIntervention,
+  SentimentLabel,
+  ToneLabel
+} from "../core/types";
+import { nowIso } from "../core/utils";
 
 const CATEGORY_LABELS: Record<ContentCategory, string> = {
   relationships: "relationships",

@@ -1,10 +1,10 @@
-import { BiasDetector } from "../content/bias-detector";
-import { MindLensEventBus } from "../content/event-bus";
-import { LocalAnalysisEngine } from "../content/local-analysis-engine";
-import { createProviders } from "../content/provider-registry";
-import { MindLensSettingsStore } from "../content/settings-store";
+import { BiasDetector } from "../content/analysis/bias-detector";
+import { LocalAnalysisEngine } from "../content/analysis/local-analysis-engine";
+import { MindLensEventBus } from "../content/core/event-bus";
+import { InstagramPost, MindLensEvent, PerspectiveIntervention } from "../content/core/types";
+import { createProviders } from "../content/providers/provider-registry";
+import { MindLensSettingsStore } from "../content/state/settings-store";
 import { HARNESS_SCENARIOS } from "./fixtures";
-import { InstagramPost, MindLensEvent, PerspectiveIntervention } from "../content/types";
 
 type HarnessRunSummary = {
   scenarioName: string;

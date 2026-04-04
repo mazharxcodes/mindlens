@@ -1,5 +1,5 @@
-import { InstagramPost } from "./types";
-import { normalizeText } from "./utils";
+import { InstagramPost } from "../core/types";
+import { normalizeText } from "../core/utils";
 
 function getVisibleTextBlocks(root: ParentNode): string[] {
   const selectors = [

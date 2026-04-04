@@ -1,7 +1,7 @@
-import { MindLensEventBus } from "./event-bus";
+import { MindLensEventBus } from "../core/event-bus";
 import { AnalysisService } from "./analysis-service";
-import { InstagramPost, LocalContentAnalysis } from "./types";
-import { nowIso } from "./utils";
+import { InstagramPost, LocalContentAnalysis } from "../core/types";
+import { nowIso } from "../core/utils";
 
 export class LocalAnalysisEngine {
   private readonly analyses = new Map<string, LocalContentAnalysis>();

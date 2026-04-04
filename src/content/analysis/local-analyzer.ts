@@ -1,4 +1,4 @@
-import { ContentCategory, LocalContentAnalysis, SentimentLabel, ToneLabel } from "./types";
+import { ContentCategory, LocalContentAnalysis, SentimentLabel, ToneLabel } from "../core/types";
 
 type WeightedSignal = {
   term: string;

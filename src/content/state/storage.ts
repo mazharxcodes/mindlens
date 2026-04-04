@@ -1,4 +1,4 @@
-import { MindLensMetrics } from "./types";
+import { MindLensMetrics } from "../core/types";
 
 const METRICS_STORAGE_KEY = "mindlens.metrics.v1";
 

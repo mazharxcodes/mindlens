@@ -1,4 +1,4 @@
-import { MindLensEventBus } from "./event-bus";
+import { MindLensEventBus } from "../core/event-bus";
 import {
   BiasComponentScores,
   BiasSnapshot,
@@ -7,8 +7,8 @@ import {
   MindLensEvent,
   SentimentLabel,
   ToneLabel
-} from "./types";
-import { nowIso } from "./utils";
+} from "../core/types";
+import { nowIso } from "../core/utils";
 
 type AnalyzedPostRecord = {
   postId: string;
